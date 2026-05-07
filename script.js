@@ -82,15 +82,15 @@ class Particle {
 
 function init() {
     particlesArray = [];
-    let numberOfParticles = (canvas.height * canvas.width) / 3000;
+    let numberOfParticles = ((canvas.height * canvas.width) / 3000) * 0.56;
     const colors = ['#ff0055', '#ff9900', '#00ffcc', '#33ccff', '#cc33ff', '#ffff00', '#ff6600', '#00ff00', '#00ffff', '#ff00ff', '#ffffff'];
 
     for (let i = 0; i < numberOfParticles; i++) {
         let size = (Math.random() * 2) + 0.5;
         let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
         let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
-        let directionX = (Math.random() * 0.4) - 0.2;
-        let directionY = (Math.random() * 0.4) - 0.2;
+        let directionX = (Math.random() * 3) - 1.5;
+        let directionY = (Math.random() * 3) - 1.5;
         let color = colors[Math.floor(Math.random() * colors.length)];
         
         particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
@@ -100,6 +100,7 @@ function init() {
 // Time Particle Implementation
 let timeParticlesArray = [];
 let lastTimeStr = "";
+let lastTimeUpdate = 0;
 const offCanvas = document.createElement('canvas');
 const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
 offCanvas.width = 600;
@@ -151,13 +152,16 @@ class TimeParticle {
 }
 
 function handleTimeParticles() {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString();
-    const dateStr = now.toLocaleDateString();
-    const fullStr = timeStr + dateStr;
+    const currentTime = Date.now();
+    if (currentTime - lastTimeUpdate >= 2000) {
+        lastTimeUpdate = currentTime;
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString();
+        const dateStr = now.toLocaleDateString();
+        const fullStr = timeStr + dateStr;
 
-    if (fullStr !== lastTimeStr) {
-        lastTimeStr = fullStr;
+        if (fullStr !== lastTimeStr) {
+            lastTimeStr = fullStr;
         offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
         offCtx.fillStyle = 'white';
         offCtx.textBaseline = 'top';
@@ -201,6 +205,7 @@ function handleTimeParticles() {
             timeParticlesArray[i].color = colors[i % colors.length];
         }
     }
+}
 
     for (let p of timeParticlesArray) {
         p.update();
@@ -303,7 +308,7 @@ function connect() {
                 if (opacityValue > 0) {
                     ctx.globalAlpha = opacityValue;
                     ctx.strokeStyle = particlesArray[a].color;
-                    ctx.lineWidth = 1;
+                    ctx.lineWidth = 0.3;
                     ctx.beginPath();
                     ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
                     ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
