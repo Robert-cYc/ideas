@@ -1,18 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamic Particles</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+    <div class="menu-container">
+        <button id="menuBtn" class="menu-btn">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div id="sideMenu" class="side-menu">
+            <ul>
+                <li><a href="#" id="loginLink">Login</a></li>
+                <li><a href="#" id="homeLink" class="disabled">Homepage</a></li>
+                <li><a href="#" id="projectLink" class="disabled">Firework</a></li>
+                <li><a href="#" id="logoutLink" style="display: none;">Logout</a></li>
+            </ul>
+        </div>
+    </div>
     <canvas id="particleCanvas"></canvas>
     <div class="content" style="display: none;">
         <h1>Particle Universe</h1>
         <p>Interactive web experience</p>
     </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <h2>Login</h2>
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Username" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Password" required>
+            </div>
+            <button id="loginSubmit" class="login-submit">Sign In</button>
+            <p id="loginMessage" class="login-message"></p>
+            <button id="closeLogin" class="close-modal">&times;</button>
+        </div>
+    </div>
     <script src="mottos.js"></script>
     <script src="script.js"></script>
 </body>
+
 </html>

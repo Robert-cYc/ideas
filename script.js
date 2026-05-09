@@ -2,6 +2,8 @@ const canvas = document.getElementById('particleCanvas');
 const ctx = canvas.getContext('2d');
 
 let particlesArray;
+let isLoggedIn = false;
+let isProjectMode = false;
 let mouse = {
     x: null,
     y: null,
@@ -293,15 +295,21 @@ class Firework {
     constructor() {
         this.x = Math.random() * canvas.width;
         this.y = canvas.height;
-        this.targetY = Math.random() * (canvas.height * 0.4);
-        this.speed = Math.random() * 5 + 8;
-        this.color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+        this.targetY = Math.random() * (canvas.height * 0.45);
+        this.speed = Math.random() * 5 + 9;
+        
+        // Diversify colors
+        const hue = Math.random() * 360;
+        const sat = isProjectMode ? 100 : 80;
+        const light = Math.random() * 20 + 50;
+        this.color = `hsl(${hue}, ${sat}%, ${light}%)`;
+        
         this.exploded = false;
     }
     update() {
         this.y -= this.speed;
-        this.speed *= 0.99; // Slight deceleration
-        if (this.speed < 2 || this.y <= this.targetY) {
+        this.speed *= 0.985; // Slightly slower deceleration
+        if (this.speed < 1.5 || this.y <= this.targetY) {
             this.exploded = true;
             this.explode();
         }
@@ -309,18 +317,21 @@ class Firework {
     }
     draw() {
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
         ctx.fillStyle = this.color;
         ctx.fill();
         // Add trail
         ctx.beginPath();
         ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x, this.y + 10);
+        ctx.lineTo(this.x, this.y + 15);
         ctx.strokeStyle = this.color;
+        ctx.lineWidth = 2;
         ctx.stroke();
+        ctx.lineWidth = 1; // Reset
     }
     explode() {
-        const particleCount = 60 + Math.random() * 40;
+        const baseCount = isProjectMode ? 120 : 60;
+        const particleCount = baseCount + Math.random() * 50;
         for (let i = 0; i < particleCount; i++) {
             explosionParticles.push(new ExplosionParticle(this.x, this.y, this.color));
         }
@@ -363,8 +374,15 @@ class ExplosionParticle {
 }
 
 function handleFireworks() {
+    if (!isLoggedIn) {
+        fireworksArray = [];
+        explosionParticles = [];
+        return;
+    }
+
     // Launch new firework randomly
-    if (Math.random() < 0.015) {
+    const launchChance = isProjectMode ? 0.05 : 0.015;
+    if (Math.random() < launchChance) {
         fireworksArray.push(new Firework());
     }
 
@@ -387,12 +405,15 @@ function animate() {
     requestAnimationFrame(animate);
     ctx.clearRect(0, 0, innerWidth, innerHeight);
     
-    for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update();
+    if (!isProjectMode) {
+        for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+        }
+        connect();
+        handleMottoParticles();
     }
-    connect();
+    
     handleTimeParticles();
-    handleMottoParticles();
     handleFireworks();
 }
 
@@ -422,3 +443,126 @@ function connect() {
 resizeCanvas();
 init();
 animate();
+
+// Menu Toggle Logic
+const menuBtn = document.getElementById('menuBtn');
+const sideMenu = document.getElementById('sideMenu');
+
+menuBtn.addEventListener('click', () => {
+    sideMenu.classList.toggle('active');
+    
+    // Animate hamburger to X
+    const spans = menuBtn.querySelectorAll('span');
+    spans[0].style.transform = sideMenu.classList.contains('active') ? 'rotate(45deg) translate(5px, 6px)' : 'none';
+    spans[1].style.opacity = sideMenu.classList.contains('active') ? '0' : '1';
+    spans[2].style.transform = sideMenu.classList.contains('active') ? 'rotate(-45deg) translate(5px, -6px)' : 'none';
+});
+
+// Close menu when clicking outside
+document.addEventListener('click', (e) => {
+    if (!menuBtn.contains(e.target) && !sideMenu.contains(e.target)) {
+        sideMenu.classList.remove('active');
+        const spans = menuBtn.querySelectorAll('span');
+        spans[0].style.transform = 'none';
+        spans[1].style.opacity = '1';
+        spans[2].style.transform = 'none';
+    }
+});
+
+// Mode Switching Logic
+const homeLink = document.getElementById('homeLink');
+const projectLink = document.getElementById('projectLink');
+
+homeLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!homeLink.classList.contains('disabled')) {
+        isProjectMode = false;
+        sideMenu.classList.remove('active');
+    }
+});
+
+projectLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!projectLink.classList.contains('disabled')) {
+        isProjectMode = true;
+        sideMenu.classList.remove('active');
+    }
+});
+
+// Login Modal Logic
+const loginLink = document.getElementById('loginLink');
+const loginModal = document.getElementById('loginModal');
+const closeLogin = document.getElementById('closeLogin');
+const loginSubmit = document.getElementById('loginSubmit');
+const loginMessage = document.getElementById('loginMessage');
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+
+loginLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    loginModal.classList.add('active');
+    sideMenu.classList.remove('active');
+    // Reset toggle button state
+    const spans = menuBtn.querySelectorAll('span');
+    spans[0].style.transform = 'none';
+    spans[1].style.opacity = '1';
+    spans[2].style.transform = 'none';
+});
+
+closeLogin.addEventListener('click', () => {
+    loginModal.classList.remove('active');
+});
+
+window.addEventListener('click', (e) => {
+    if (e.target === loginModal) {
+        loginModal.classList.remove('active');
+    }
+});
+
+loginSubmit.addEventListener('click', () => {
+    const user = usernameInput.value;
+    const pass = passwordInput.value;
+
+    if (user === 'admin' && pass === '6321') {
+        isLoggedIn = true;
+        loginMessage.textContent = 'Login Successful!';
+        loginMessage.className = 'login-message success';
+        
+        // Enable links
+        document.getElementById('homeLink').classList.remove('disabled');
+        document.getElementById('projectLink').classList.remove('disabled');
+        
+        // Show Logout, hide Login
+        loginLink.style.display = 'none';
+        document.getElementById('logoutLink').style.display = 'block';
+
+        setTimeout(() => {
+            loginModal.classList.remove('active');
+            loginMessage.textContent = '';
+            usernameInput.value = '';
+            passwordInput.value = '';
+        }, 1500);
+    } else {
+        loginMessage.textContent = 'Invalid credentials';
+        loginMessage.className = 'login-message error';
+    }
+});
+
+// Logout Logic
+const logoutLink = document.getElementById('logoutLink');
+logoutLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    isLoggedIn = false;
+    isProjectMode = false; // Reset mode
+    
+    // Disable links
+    document.getElementById('homeLink').classList.add('disabled');
+    document.getElementById('projectLink').classList.add('disabled');
+    
+    // Toggle menu items
+    loginLink.style.display = 'block';
+    logoutLink.style.display = 'none';
+    
+    sideMenu.classList.remove('active');
+});
+
