@@ -20,6 +20,7 @@
                 <li><a href="#" id="loginLink">Login</a></li>
                 <li><a href="#" id="homeLink" class="disabled">Homepage</a></li>
                 <li><a href="#" id="projectLink" class="disabled">Firework</a></li>
+                <li><a href="#" id="pcStatusLink" class="disabled">PC Status</a></li>
                 <li><a href="#" id="logoutLink" style="display: none;">Logout</a></li>
             </ul>
         </div>
@@ -43,6 +44,40 @@
             <button id="loginSubmit" class="login-submit">Sign In</button>
             <p id="loginMessage" class="login-message"></p>
             <button id="closeLogin" class="close-modal">&times;</button>
+        </div>
+    </div>
+
+    <!-- PC Status Modal -->
+    <div id="pcStatusModal" class="modal">
+        <div class="modal-content system-info">
+            <h2>PC Status</h2>
+            <div class="status-grid">
+                <div class="status-item">
+                    <span class="label">OS</span>
+                    <span class="value">macOS 26.5</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">CPU</span>
+                    <span class="value">Apple M4 (10 Cores)</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">GPU</span>
+                    <span class="value">Apple M4 10-core</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Memory</span>
+                    <span class="value">16 GB RAM</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Storage</span>
+                    <span class="value">460GB (149GB Free)</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Display</span>
+                    <span class="value">5120 x 2880 (5K)</span>
+                </div>
+            </div>
+            <button id="closePCStatus" class="close-modal">&times;</button>
         </div>
     </div>
     <script src="mottos.js"></script>
