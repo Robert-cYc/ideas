@@ -285,6 +285,104 @@ function handleMottoParticles() {
     }
 }
 
+// Firework Implementation
+let fireworksArray = [];
+let explosionParticles = [];
+
+class Firework {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height;
+        this.targetY = Math.random() * (canvas.height * 0.4);
+        this.speed = Math.random() * 5 + 8;
+        this.color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+        this.exploded = false;
+    }
+    update() {
+        this.y -= this.speed;
+        this.speed *= 0.99; // Slight deceleration
+        if (this.speed < 2 || this.y <= this.targetY) {
+            this.exploded = true;
+            this.explode();
+        }
+        this.draw();
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        // Add trail
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x, this.y + 10);
+        ctx.strokeStyle = this.color;
+        ctx.stroke();
+    }
+    explode() {
+        const particleCount = 60 + Math.random() * 40;
+        for (let i = 0; i < particleCount; i++) {
+            explosionParticles.push(new ExplosionParticle(this.x, this.y, this.color));
+        }
+    }
+}
+
+class ExplosionParticle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 6 + 2;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.gravity = 0.12;
+        this.friction = 0.96;
+        this.alpha = 1;
+        this.decay = Math.random() * 0.01 + 0.01;
+        this.size = Math.random() * 2 + 1;
+    }
+    update() {
+        this.vx *= this.friction;
+        this.vy *= this.friction;
+        this.vy += this.gravity;
+        this.x += this.vx;
+        this.y += this.vy;
+        this.alpha -= this.decay;
+        this.draw();
+    }
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+function handleFireworks() {
+    // Launch new firework randomly
+    if (Math.random() < 0.015) {
+        fireworksArray.push(new Firework());
+    }
+
+    for (let i = fireworksArray.length - 1; i >= 0; i--) {
+        fireworksArray[i].update();
+        if (fireworksArray[i].exploded) {
+            fireworksArray.splice(i, 1);
+        }
+    }
+
+    for (let i = explosionParticles.length - 1; i >= 0; i--) {
+        explosionParticles[i].update();
+        if (explosionParticles[i].alpha <= 0) {
+            explosionParticles.splice(i, 1);
+        }
+    }
+}
+
 function animate() {
     requestAnimationFrame(animate);
     ctx.clearRect(0, 0, innerWidth, innerHeight);
@@ -295,6 +393,7 @@ function animate() {
     connect();
     handleTimeParticles();
     handleMottoParticles();
+    handleFireworks();
 }
 
 function connect() {
