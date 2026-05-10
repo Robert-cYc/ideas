@@ -295,8 +295,8 @@ class Firework {
     constructor() {
         this.x = Math.random() * canvas.width;
         this.y = canvas.height;
-        this.targetY = Math.random() * (canvas.height * 0.45);
-        this.speed = Math.random() * 5 + 9;
+        this.targetY = Math.random() * (canvas.height * 0.25) + (canvas.height * 0.1); // Between 10% and 35% from the top
+        this.speed = 12; // Initial speed, regulated in update()
         
         // Diversify colors
         const hue = Math.random() * 360;
@@ -307,9 +307,15 @@ class Firework {
         this.exploded = false;
     }
     update() {
+        let distance = this.y - this.targetY;
+        
+        // Ease out - slow down gracefully near the peak
+        this.speed = Math.max(1.0, distance * 0.025);
+        if (this.speed > 14) this.speed = 14; // Max rocket speed limit
+
         this.y -= this.speed;
-        this.speed *= 0.985; // Slightly slower deceleration
-        if (this.speed < 1.5 || this.y <= this.targetY) {
+        
+        if (distance <= 5) {
             this.exploded = true;
             this.explode();
         }
@@ -344,7 +350,7 @@ class ExplosionParticle {
         this.y = y;
         this.color = color;
         const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 6 + 2;
+        const speed = Math.random() * 3 + 1; // Reduced explosion speed
         this.vx = Math.cos(angle) * speed;
         this.vy = Math.sin(angle) * speed;
         this.gravity = 0.12;
