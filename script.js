@@ -230,8 +230,9 @@ function handleMottoParticles() {
     if (currentTime - lastMottoSwitchTime > 10000 || lastMottoSwitchTime === 0) {
         let isInitialLoad = (lastMottoSwitchTime === 0);
         lastMottoSwitchTime = currentTime;
+        // Use random index for true randomness
+        currentMottoIndex = Math.floor(Math.random() * mottos.length);
         const currentMotto = mottos[currentMottoIndex];
-        currentMottoIndex = (currentMottoIndex + 1) % mottos.length;
 
         mottoOffCtx.clearRect(0, 0, mottoOffCanvas.width, mottoOffCanvas.height);
         mottoOffCtx.fillStyle = 'white';
