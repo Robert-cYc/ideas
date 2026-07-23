@@ -526,33 +526,26 @@ window.addEventListener('click', (e) => {
 });
 
 loginSubmit.addEventListener('click', () => {
-    const user = usernameInput.value;
-    const pass = passwordInput.value;
+    // No password protection - auto-login enabled
+    isLoggedIn = true;
+    loginMessage.textContent = 'Welcome!';
+    loginMessage.className = 'login-message success';
 
-    if (user === 'admin' && pass === '6321') {
-        isLoggedIn = true;
-        loginMessage.textContent = 'Login Successful!';
-        loginMessage.className = 'login-message success';
-        
-        // Enable links
-        document.getElementById('homeLink').classList.remove('disabled');
-        document.getElementById('projectLink').classList.remove('disabled');
-        document.getElementById('pcStatusLink').classList.remove('disabled');
-        
-        // Show Logout, hide Login
-        loginLink.style.display = 'none';
-        document.getElementById('logoutLink').style.display = 'block';
+    // Enable links
+    document.getElementById('homeLink').classList.remove('disabled');
+    document.getElementById('projectLink').classList.remove('disabled');
+    document.getElementById('pcStatusLink').classList.remove('disabled');
 
-        setTimeout(() => {
-            loginModal.classList.remove('active');
-            loginMessage.textContent = '';
-            usernameInput.value = '';
-            passwordInput.value = '';
-        }, 1500);
-    } else {
-        loginMessage.textContent = 'Invalid credentials';
-        loginMessage.className = 'login-message error';
-    }
+    // Show Logout, hide Login
+    loginLink.style.display = 'none';
+    document.getElementById('logoutLink').style.display = 'block';
+
+    setTimeout(() => {
+        loginModal.classList.remove('active');
+        loginMessage.textContent = '';
+        usernameInput.value = '';
+        passwordInput.value = '';
+    }, 1500);
 });
 
 // Logout Logic
