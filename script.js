@@ -486,30 +486,4 @@ projectLink.addEventListener('click', (e) => {
     sideMenu.classList.remove('active');
 });
 
-// PC Status Modal Logic
-const pcStatusLink = document.getElementById('pcStatusLink');
-const pcStatusModal = document.getElementById('pcStatusModal');
-const closePCStatus = document.getElementById('closePCStatus');
-
-pcStatusLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    pcStatusModal.classList.add('active');
-    sideMenu.classList.remove('active');
-
-    // Reset toggle button state
-    const spans = menuBtn.querySelectorAll('span');
-    spans[0].style.transform = 'none';
-    spans[1].style.opacity = '1';
-    spans[2].style.transform = 'none';
-});
-
-closePCStatus.addEventListener('click', () => {
-    pcStatusModal.classList.remove('active');
-});
-
-window.addEventListener('click', (e) => {
-    if (e.target === pcStatusModal) {
-        pcStatusModal.classList.remove('active');
-    }
-});
 
