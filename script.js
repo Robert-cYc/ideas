@@ -2,7 +2,7 @@ const canvas = document.getElementById('particleCanvas');
 const ctx = canvas.getContext('2d');
 
 let particlesArray;
-let isLoggedIn = false;
+let isLoggedIn = true;
 let isProjectMode = false;
 let mouse = {
     x: null,
@@ -380,11 +380,6 @@ class ExplosionParticle {
 }
 
 function handleFireworks() {
-    if (!isLoggedIn) {
-        fireworksArray = [];
-        explosionParticles = [];
-        return;
-    }
 
     // Launch new firework randomly
     const launchChance = isProjectMode ? 0.05 : 0.015;
@@ -481,89 +476,13 @@ const projectLink = document.getElementById('projectLink');
 
 homeLink.addEventListener('click', (e) => {
     e.preventDefault();
-    if (!homeLink.classList.contains('disabled')) {
-        isProjectMode = false;
-        sideMenu.classList.remove('active');
-    }
+    isProjectMode = false;
+    sideMenu.classList.remove('active');
 });
 
 projectLink.addEventListener('click', (e) => {
     e.preventDefault();
-    if (!projectLink.classList.contains('disabled')) {
-        isProjectMode = true;
-        sideMenu.classList.remove('active');
-    }
-});
-
-// Login Modal Logic
-const loginLink = document.getElementById('loginLink');
-const loginModal = document.getElementById('loginModal');
-const closeLogin = document.getElementById('closeLogin');
-const loginSubmit = document.getElementById('loginSubmit');
-const loginMessage = document.getElementById('loginMessage');
-const usernameInput = document.getElementById('username');
-const passwordInput = document.getElementById('password');
-
-loginLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    loginModal.classList.add('active');
-    sideMenu.classList.remove('active');
-    // Reset toggle button state
-    const spans = menuBtn.querySelectorAll('span');
-    spans[0].style.transform = 'none';
-    spans[1].style.opacity = '1';
-    spans[2].style.transform = 'none';
-});
-
-closeLogin.addEventListener('click', () => {
-    loginModal.classList.remove('active');
-});
-
-window.addEventListener('click', (e) => {
-    if (e.target === loginModal) {
-        loginModal.classList.remove('active');
-    }
-});
-
-loginSubmit.addEventListener('click', () => {
-    // No password protection - auto-login enabled
-    isLoggedIn = true;
-    loginMessage.textContent = 'Welcome!';
-    loginMessage.className = 'login-message success';
-
-    // Enable links
-    document.getElementById('homeLink').classList.remove('disabled');
-    document.getElementById('projectLink').classList.remove('disabled');
-    document.getElementById('pcStatusLink').classList.remove('disabled');
-
-    // Show Logout, hide Login
-    loginLink.style.display = 'none';
-    document.getElementById('logoutLink').style.display = 'block';
-
-    setTimeout(() => {
-        loginModal.classList.remove('active');
-        loginMessage.textContent = '';
-        usernameInput.value = '';
-        passwordInput.value = '';
-    }, 1500);
-});
-
-// Logout Logic
-const logoutLink = document.getElementById('logoutLink');
-logoutLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    isLoggedIn = false;
-    isProjectMode = false; // Reset mode
-    
-    // Disable links
-    document.getElementById('homeLink').classList.add('disabled');
-    document.getElementById('projectLink').classList.add('disabled');
-    document.getElementById('pcStatusLink').classList.add('disabled');
-    
-    // Toggle menu items
-    loginLink.style.display = 'block';
-    logoutLink.style.display = 'none';
-    
+    isProjectMode = true;
     sideMenu.classList.remove('active');
 });
 
@@ -574,16 +493,14 @@ const closePCStatus = document.getElementById('closePCStatus');
 
 pcStatusLink.addEventListener('click', (e) => {
     e.preventDefault();
-    if (!pcStatusLink.classList.contains('disabled')) {
-        pcStatusModal.classList.add('active');
-        sideMenu.classList.remove('active');
-        
-        // Reset toggle button state
-        const spans = menuBtn.querySelectorAll('span');
-        spans[0].style.transform = 'none';
-        spans[1].style.opacity = '1';
-        spans[2].style.transform = 'none';
-    }
+    pcStatusModal.classList.add('active');
+    sideMenu.classList.remove('active');
+
+    // Reset toggle button state
+    const spans = menuBtn.querySelectorAll('span');
+    spans[0].style.transform = 'none';
+    spans[1].style.opacity = '1';
+    spans[2].style.transform = 'none';
 });
 
 closePCStatus.addEventListener('click', () => {
