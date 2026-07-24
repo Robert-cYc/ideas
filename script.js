@@ -487,4 +487,11 @@ projectLink.addEventListener('click', (e) => {
     sideMenu.classList.remove('active');
 });
 
+const imsLink = document.getElementById('imsLink');
+imsLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    isProjectMode = true;
+    sideMenu.classList.remove('active');
+});
+
 
