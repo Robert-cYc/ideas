@@ -476,7 +476,11 @@ const homeLink = document.getElementById('homeLink');
 const projectLink = document.getElementById('projectLink');
 
 homeLink.addEventListener('click', (e) => {
-    e.preventDefault();
+    // Only prevent default if href is # (stay on same page)
+    // If href points to another page, allow navigation
+    if (homeLink.getAttribute('href') === '#') {
+        e.preventDefault();
+    }
     isProjectMode = false;
     sideMenu.classList.remove('active');
 });
@@ -487,11 +491,12 @@ projectLink.addEventListener('click', (e) => {
     sideMenu.classList.remove('active');
 });
 
-const imsLink = document.getElementById('imsLink');
-imsLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    isProjectMode = true;
-    sideMenu.classList.remove('active');
-});
+const aiNewsLink = document.getElementById('aiNewsLink');
+if (aiNewsLink) {
+    aiNewsLink.addEventListener('click', () => {
+        isProjectMode = false;
+        sideMenu.classList.remove('active');
+    });
+}
 
 

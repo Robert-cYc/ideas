@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 新聞 - Particle Universe</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* AI News Page Specific Styles */
+        .news-page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #050505 0%, #0a0a0a 100%);
+            z-index: 2;
+            padding: 80px 40px 40px;
+            overflow-x: hidden;
+        }
+
+        .news-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .news-header h1 {
+            font-size: 3rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .news-header p {
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: #a0a0a0;
+            letter-spacing: 1px;
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .news-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .news-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-4px);
+            border-color: rgba(79, 172, 254, 0.3);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.1);
+        }
+
+        .news-card .category {
+            display: inline-block;
+            background: rgba(79, 172, 254, 0.2);
+            color: #4facfe;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .news-card .date {
+            font-size: 0.8rem;
+            color: #808080;
+            margin-bottom: 12px;
+        }
+
+        .news-card .title {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .news-card .summary {
+            font-size: 0.9rem;
+            font-weight: 300;
+            color: #c0c0c0;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .news-card .source {
+            font-size: 0.8rem;
+            color: #606060;
+            word-break: break-all;
+        }
+
+        .news-card .source a {
+            color: #4facfe;
+            text-decoration: none;
+        }
+
+        .news-card .source a:hover {
+            text-decoration: underline;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 50px;
+            color: #4facfe;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 300;
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: #00f2fe;
+            padding-left: 10px;
+        }
+
+        /* Allow scrolling on news page */
+        body {
+            overflow-y: auto;
+        }
+
+        /* Ensure canvas is behind content and menu */
+        #particleCanvas {
+            z-index: 0 !important;
+        }
+
+        /* Ensure news page is above canvas but below menu */
+        .news-page {
+            z-index: 2 !important;
+        }
+
+        /* Ensure menu is on top */
+        .menu-container {
+            z-index: 1000 !important;
+        }
+
+        .side-menu {
+            z-index: 999 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="menu-container">
+        <button id="menuBtn" class="menu-btn">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div id="sideMenu" class="side-menu">
+            <ul>
+                <li><a href="index.html" id="homeLink">Homepage</a></li>
+                <li><a href="#" id="projectLink">Firework</a></li>
+                <li><a href="ai-news.html" id="aiNewsLink" class="active">AI NEWS</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="news-page">
+        <div class="news-header">
+            <h1>AI 新聞</h1>
+            <p>最新人工智慧技術動態與行業資訊</p>
+            <div id="updateInfo" style="color: #606060; font-size: 0.85rem; margin-top: 10px; cursor: pointer;"></div>
+        </div>
+        <div class="news-grid" id="newsGrid">
+            <!-- News cards will be dynamically inserted here -->
+        </div>
+        <a href="index.html" class="back-link">← 返回粒子宇宙</a>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="ai-news.js"></script>
+</body>
+
+</html>
+
