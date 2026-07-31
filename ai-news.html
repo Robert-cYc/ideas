@@ -132,7 +132,29 @@
             padding-left: 10px;
         }
 
-        /* Allow scrolling on news page */
+        /* Language toggle button */
+        .lang-toggle {
+            position: absolute;
+            top: 20px;
+            right: 80px;
+            background: rgba(79, 172, 254, 0.2);
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            color: #4facfe;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        .lang-toggle:hover {
+            background: rgba(79, 172, 254, 0.4);
+            border-color: rgba(79, 172, 254, 0.6);
+        }
+        .lang-toggle.active {
+            background: rgba(79, 172, 254, 0.6);
+            color: #050505;
+        }/* Allow scrolling on news page */
         body {
             overflow-y: auto;
         }
@@ -181,6 +203,8 @@
             <h1>AI 新聞</h1>
             <p>最新人工智慧技術動態與行業資訊</p>
             <div id="updateInfo" style="color: #606060; font-size: 0.85rem; margin-top: 10px; cursor: pointer;"></div>
+            <div id="langToggle" class="lang-toggle">EN / 繁中</div>
+
         </div>
         <div class="news-grid" id="newsGrid">
             <!-- News cards will be dynamically inserted here -->
@@ -188,6 +212,7 @@
         <a href="index.html" class="back-link">← 返回粒子宇宙</a>
     </div>
 
+    <script src="mottos.js"></script>
     <script src="script.js"></script>
     <script src="ai-news.js"></script>
 </body>
