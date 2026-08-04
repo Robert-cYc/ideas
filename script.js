@@ -28,6 +28,7 @@ function resizeCanvas() {
 window.addEventListener('resize', function() {
     resizeCanvas();
     init();
+    initMatrixRain();
 });
 
 class Particle {
@@ -288,135 +289,78 @@ function handleMottoParticles() {
     }
 }
 
-// Firework Implementation
-let fireworksArray = [];
-let explosionParticles = [];
+// Matrix Rain Implementation
+const matrixChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789アァカサタナハマヤラワガザダバパイィキシチニヒミリヰギジディビピウゥクスツヌフムユルヰグズヅブプエェケセテネヘメレヶゲゼデベペオォコソトノホモヨロゾ';
+const matrixFontSize = 20;
+let matrixColumns = [];
 
-class Firework {
-    constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = canvas.height;
-        this.targetY = Math.random() * (canvas.height * 0.25) + (canvas.height * 0.1); // Between 10% and 35% from the top
-        this.speed = 12; // Initial speed, regulated in update()
-        
-        // Diversify colors
-        const hue = Math.random() * 360;
-        const sat = isProjectMode ? 100 : 80;
-        const light = Math.random() * 20 + 50;
-        this.color = `hsl(${hue}, ${sat}%, ${light}%)`;
-        
-        this.exploded = false;
-    }
-    update() {
-        let distance = this.y - this.targetY;
-        
-        // Ease out - slow down gracefully near the peak
-        this.speed = Math.max(1.0, distance * 0.025);
-        if (this.speed > 14) this.speed = 14; // Max rocket speed limit
-
-        this.y -= this.speed;
-        
-        if (distance <= 5) {
-            this.exploded = true;
-            this.explode();
-        }
-        this.draw();
-    }
-    draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-        // Add trail
-        ctx.beginPath();
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x, this.y + 15);
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.lineWidth = 1; // Reset
-    }
-    explode() {
-        const baseCount = isProjectMode ? 120 : 60;
-        const particleCount = baseCount + Math.random() * 50;
-        for (let i = 0; i < particleCount; i++) {
-            explosionParticles.push(new ExplosionParticle(this.x, this.y, this.color));
-        }
+function initMatrixRain() {
+    const columnCount = Math.floor(canvas.width / matrixFontSize);
+    matrixColumns = [];
+    for (let i = 0; i < columnCount; i++) {
+        matrixColumns.push({
+            x: i * matrixFontSize,
+            y: Math.random() * canvas.height,
+            speed: Math.random() * 3 + 1,
+            charIndex: Math.floor(Math.random() * matrixChars.length),
+            trailLength: Math.floor(Math.random() * 3) + 2
+        });
     }
 }
 
-class ExplosionParticle {
-    constructor(x, y, color) {
-        this.x = x;
-        this.y = y;
-        this.color = color;
-        const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 3 + 1; // Reduced explosion speed
-        this.vx = Math.cos(angle) * speed;
-        this.vy = Math.sin(angle) * speed;
-        this.gravity = 0.12;
-        this.friction = 0.96;
-        this.alpha = 1;
-        this.decay = Math.random() * 0.01 + 0.01;
-        this.size = Math.random() * 2 + 1;
-    }
-    update() {
-        this.vx *= this.friction;
-        this.vy *= this.friction;
-        this.vy += this.gravity;
-        this.x += this.vx;
-        this.y += this.vy;
-        this.alpha -= this.decay;
-        this.draw();
-    }
-    draw() {
-        ctx.save();
-        ctx.globalAlpha = this.alpha;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-        ctx.restore();
-    }
-}
+function handleMatrixRain() {
+    // Semi-transparent dark green fill creates fade trail effect
+    ctx.fillStyle = 'rgba(0, 10, 0, 0.08)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-function handleFireworks() {
+    ctx.font = `${matrixFontSize}px monospace`;
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
 
-    // Launch new firework randomly
-    const launchChance = isProjectMode ? 0.05 : 0.015;
-    if (Math.random() < launchChance) {
-        fireworksArray.push(new Firework());
-    }
+    for (let i = 0; i < matrixColumns.length; i++) {
+        const col = matrixColumns[i];
 
-    for (let i = fireworksArray.length - 1; i >= 0; i--) {
-        fireworksArray[i].update();
-        if (fireworksArray[i].exploded) {
-            fireworksArray.splice(i, 1);
+        // Head of the drop — bright green
+        ctx.fillStyle = '#00ff88';
+        ctx.fillText(matrixChars[col.charIndex], col.x, col.y);
+
+        // Trail — dimmer with decreasing opacity
+        for (let t = 1; t <= col.trailLength; t++) {
+            const opacity = Math.max(0, 0.5 - (t * 0.15));
+            ctx.fillStyle = `rgba(0, 255, 136, ${opacity})`;
+            ctx.fillText(matrixChars[(col.charIndex + t) % matrixChars.length], col.x, col.y - t * matrixFontSize);
         }
-    }
 
-    for (let i = explosionParticles.length - 1; i >= 0; i--) {
-        explosionParticles[i].update();
-        if (explosionParticles[i].alpha <= 0) {
-            explosionParticles.splice(i, 1);
+        // Cycle character each frame for animation
+        col.charIndex = (col.charIndex + 1) % matrixChars.length;
+
+        col.y += col.speed;
+
+        // Reset to top when off-screen
+        if (col.y > canvas.height + matrixFontSize * col.trailLength) {
+            col.y = -matrixFontSize * col.trailLength;
+            col.speed = Math.random() * 3 + 1;
+            col.trailLength = Math.floor(Math.random() * 3) + 2;
         }
     }
 }
 
 function animate() {
     requestAnimationFrame(animate);
-    ctx.clearRect(0, 0, innerWidth, innerHeight);
-    
-    if (!isProjectMode) {
+
+    if (isProjectMode) {
+        // Matrix mode: green fade-trail background
+        handleMatrixRain();
+    } else {
+        ctx.clearRect(0, 0, innerWidth, innerHeight);
         for (let i = 0; i < particlesArray.length; i++) {
             particlesArray[i].update();
         }
         connect();
         handleMottoParticles();
     }
-    
+
     handleTimeParticles();
-    handleFireworks();
 }
 
 function connect() {
@@ -444,6 +388,7 @@ function connect() {
 
 resizeCanvas();
 init();
+initMatrixRain();
 animate();
 
 // Menu Toggle Logic
@@ -473,7 +418,7 @@ document.addEventListener('click', (e) => {
 
 // Mode Switching Logic
 const homeLink = document.getElementById('homeLink');
-const projectLink = document.getElementById('projectLink');
+const matrixLink = document.getElementById('matrixLink');
 
 homeLink.addEventListener('click', (e) => {
     // Only prevent default if href is # (stay on same page)
@@ -482,19 +427,23 @@ homeLink.addEventListener('click', (e) => {
         e.preventDefault();
     }
     isProjectMode = false;
+    document.body.classList.remove('matrix-mode');
     sideMenu.classList.remove('active');
 });
 
-projectLink.addEventListener('click', (e) => {
+matrixLink.addEventListener('click', (e) => {
     e.preventDefault();
     isProjectMode = true;
+    document.body.classList.add('matrix-mode');
     sideMenu.classList.remove('active');
+    initMatrixRain();
 });
 
 const aiNewsLink = document.getElementById('aiNewsLink');
 if (aiNewsLink) {
     aiNewsLink.addEventListener('click', () => {
         isProjectMode = false;
+        document.body.classList.remove('matrix-mode');
         sideMenu.classList.remove('active');
     });
 }
@@ -503,6 +452,7 @@ const graycodeLink = document.getElementById('graycodeLink');
 if (graycodeLink) {
     graycodeLink.addEventListener('click', () => {
         isProjectMode = false;
+        document.body.classList.remove('matrix-mode');
         sideMenu.classList.remove('active');
     });
 }

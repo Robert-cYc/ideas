@@ -157,6 +157,16 @@
         .side-menu {
             z-index: 999 !important;
         }
+
+        /* Hide graycode content and raise canvas when Matrix mode is active */
+        body.matrix-mode .graycode-page {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        body.matrix-mode #particleCanvas {
+            z-index: 1 !important;
+        }
     </style>
 </head>
 
@@ -170,7 +180,7 @@
         <div id="sideMenu" class="side-menu">
             <ul>
                 <li><a href="index.html" id="homeLink">Homepage</a></li>
-                <li><a href="#" id="projectLink">Firework</a></li>
+                <li><a href="#" id="matrixLink">Matrix</a></li>
                 <li><a href="ai-news.html" id="aiNewsLink">AI NEWS</a></li>
                 <li><a href="graycode.html" id="graycodeLink" class="active">Graycode Converter</a></li>
             </ul>
