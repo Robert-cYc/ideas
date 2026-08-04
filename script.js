@@ -499,4 +499,12 @@ if (aiNewsLink) {
     });
 }
 
+const graycodeLink = document.getElementById('graycodeLink');
+if (graycodeLink) {
+    graycodeLink.addEventListener('click', () => {
+        isProjectMode = false;
+        sideMenu.classList.remove('active');
+    });
+}
+
 

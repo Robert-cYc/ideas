@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graycode Converter - Particle Universe</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Graycode Converter Page Specific Styles */
+        .graycode-page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #050505 0%, #0a0a0a 100%);
+            z-index: 2;
+            padding: 80px 40px 40px;
+            overflow-x: hidden;
+        }
+
+        .converter-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .converter-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .converter-header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .converter-header p {
+            font-size: 1rem;
+            font-weight: 300;
+            color: #a0a0a0;
+            letter-spacing: 1px;
+        }
+
+        .converter-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 32px;
+        }
+
+        .converter-row {
+            margin-bottom: 20px;
+        }
+
+        .converter-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .converter-row label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #808080;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .converter-row input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 14px 18px;
+            font-size: 1.1rem;
+            color: #ffffff;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .converter-row input:focus {
+            border-color: rgba(79, 172, 254, 0.5);
+            box-shadow: 0 0 15px rgba(79, 172, 254, 0.2);
+        }
+
+        .converter-row input[readonly] {
+            cursor: default;
+        }
+
+        .binary-output {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #4facfe;
+            letter-spacing: 1px;
+        }
+
+        .binary-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bit-toggle {
+            font-size: 0.85rem;
+            color: #606060;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .bit-toggle:hover {
+            color: #4facfe;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 40px;
+            color: #4facfe;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 300;
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: #00f2fe;
+            padding-left: 10px;
+        }
+
+        /* Allow scrolling on graycode page */
+        body {
+            overflow-y: auto;
+        }
+
+        /* Ensure canvas is behind content and menu */
+        #particleCanvas {
+            z-index: 0 !important;
+        }
+
+        /* Ensure page is above canvas but below menu */
+        .graycode-page {
+            z-index: 2 !important;
+        }
+
+        /* Ensure menu is on top */
+        .menu-container {
+            z-index: 1000 !important;
+        }
+
+        .side-menu {
+            z-index: 999 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="menu-container">
+        <button id="menuBtn" class="menu-btn">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div id="sideMenu" class="side-menu">
+            <ul>
+                <li><a href="index.html" id="homeLink">Homepage</a></li>
+                <li><a href="#" id="projectLink">Firework</a></li>
+                <li><a href="ai-news.html" id="aiNewsLink">AI NEWS</a></li>
+                <li><a href="graycode.html" id="graycodeLink" class="active">Graycode Converter</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="graycode-page">
+        <div class="converter-container">
+            <div class="converter-header">
+                <h1>Graycode Converter</h1>
+                <p>Convert decimal numbers to Gray code</p>
+            </div>
+            <div class="converter-card">
+                <div class="converter-row">
+                    <label for="decimalInput">Decimal</label>
+                    <input type="number" id="decimalInput" min="0" placeholder="Enter a decimal number...">
+                </div>
+                <div class="converter-row">
+                    <label for="binaryOutput" class="binary-label">
+                        <span>Binary</span>
+                        <span class="bit-toggle" id="bitToggle" data-bits="8">8 bits</span>
+                    </label>
+                    <input type="text" id="binaryOutput" readonly class="binary-output">
+                </div>
+                <div class="converter-row">
+                    <label for="grayOutput">Gray Code</label>
+                    <input type="text" id="grayOutput" readonly class="binary-output">
+                </div>
+                <div class="converter-row">
+                    <label for="grayDecimalOutput">Gray Decimal</label>
+                    <input type="text" id="grayDecimalOutput" readonly class="binary-output">
+                </div>
+            </div>
+            <a href="index.html" class="back-link">← Back to Particle Universe</a>
+        </div>
+    </div>
+
+    <script src="mottos.js"></script>
+    <script src="script.js"></script>
+    <script src="graycode.js"></script>
+</body>
+
+</html>
