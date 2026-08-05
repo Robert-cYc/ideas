@@ -290,8 +290,8 @@ function handleMottoParticles() {
 }
 
 // Matrix Rain Implementation
-const matrixChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789アァカサタナハマヤラワガザダバパイィキシチニヒミリヰギジディビピウゥクスツヌフムユルヰグズヅブプエェケセテネヘメレヶゲゼデベペオォコソトノホモヨロゾ';
-const matrixFontSize = 20;
+const matrixChars = '0123456789@^#*<>ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const matrixFontSize = 28;
 let matrixColumns = [];
 
 function initMatrixRain() {
@@ -301,7 +301,8 @@ function initMatrixRain() {
         matrixColumns.push({
             x: i * matrixFontSize,
             y: Math.random() * canvas.height,
-            speed: Math.random() * 3 + 1,
+            z: Math.random() * 0.7 + 0.3, // Depth: 0.3 (far) to 1.0 (near)
+            speed: Math.random() * 2 + 0.5,
             charIndex: Math.floor(Math.random() * matrixChars.length),
             trailLength: Math.floor(Math.random() * 3) + 2
         });
@@ -313,33 +314,41 @@ function handleMatrixRain() {
     ctx.fillStyle = 'rgba(0, 10, 0, 0.08)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.font = `${matrixFontSize}px monospace`;
     ctx.textBaseline = 'top';
     ctx.textAlign = 'left';
 
     for (let i = 0; i < matrixColumns.length; i++) {
         const col = matrixColumns[i];
+        const z = col.z;
+        const fontSize = Math.max(12, Math.floor(matrixFontSize * z));
+        ctx.font = `${fontSize}px monospace`;
 
-        // Head of the drop — bright green
+        // Head of the drop — bright green, brighter/faster when closer
+        const brightness = 0.4 + z * 0.6;
+        ctx.globalAlpha = brightness;
         ctx.fillStyle = '#00ff88';
         ctx.fillText(matrixChars[col.charIndex], col.x, col.y);
 
         // Trail — dimmer with decreasing opacity
         for (let t = 1; t <= col.trailLength; t++) {
-            const opacity = Math.max(0, 0.5 - (t * 0.15));
-            ctx.fillStyle = `rgba(0, 255, 136, ${opacity})`;
-            ctx.fillText(matrixChars[(col.charIndex + t) % matrixChars.length], col.x, col.y - t * matrixFontSize);
+            const opacity = Math.max(0, (0.5 - (t * 0.15)) * z);
+            ctx.globalAlpha = opacity;
+            ctx.fillStyle = '#00ff88';
+            ctx.fillText(matrixChars[(col.charIndex + t) % matrixChars.length], col.x, col.y - t * fontSize);
         }
+
+        ctx.globalAlpha = 1;
 
         // Cycle character each frame for animation
         col.charIndex = (col.charIndex + 1) % matrixChars.length;
 
-        col.y += col.speed;
+        col.y += col.speed * z;
 
         // Reset to top when off-screen
-        if (col.y > canvas.height + matrixFontSize * col.trailLength) {
-            col.y = -matrixFontSize * col.trailLength;
-            col.speed = Math.random() * 3 + 1;
+        if (col.y > canvas.height + fontSize * col.trailLength) {
+            col.y = -fontSize * col.trailLength;
+            col.z = Math.random() * 0.7 + 0.3;
+            col.speed = Math.random() * 2 + 0.5;
             col.trailLength = Math.floor(Math.random() * 3) + 2;
         }
     }
@@ -428,6 +437,7 @@ homeLink.addEventListener('click', (e) => {
     }
     isProjectMode = false;
     document.body.classList.remove('matrix-mode');
+    document.documentElement.classList.remove('matrix-mode');
     sideMenu.classList.remove('active');
 });
 
@@ -435,6 +445,7 @@ matrixLink.addEventListener('click', (e) => {
     e.preventDefault();
     isProjectMode = true;
     document.body.classList.add('matrix-mode');
+    document.documentElement.classList.add('matrix-mode');
     sideMenu.classList.remove('active');
     initMatrixRain();
 });
@@ -444,6 +455,7 @@ if (aiNewsLink) {
     aiNewsLink.addEventListener('click', () => {
         isProjectMode = false;
         document.body.classList.remove('matrix-mode');
+        document.documentElement.classList.remove('matrix-mode');
         sideMenu.classList.remove('active');
     });
 }
@@ -453,6 +465,7 @@ if (graycodeLink) {
     graycodeLink.addEventListener('click', () => {
         isProjectMode = false;
         document.body.classList.remove('matrix-mode');
+        document.documentElement.classList.remove('matrix-mode');
         sideMenu.classList.remove('active');
     });
 }

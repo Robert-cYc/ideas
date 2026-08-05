@@ -155,8 +155,12 @@
             background: rgba(79, 172, 254, 0.6);
             color: #050505;
         }/* Allow scrolling on news page */
-        body {
+        html, body {
             overflow-y: auto;
+        }
+        /* Hide scrollbar when in matrix mode */
+        html.matrix-mode {
+            overflow: hidden;
         }
 
         /* Ensure canvas is behind content and menu */

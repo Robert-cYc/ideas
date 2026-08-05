@@ -6,7 +6,7 @@
     box-sizing: border-box;
 }
 
-body {
+html, body {
     background-color: #050505;
     overflow: hidden;
     font-family: 'Outfit', sans-serif;
@@ -133,3 +133,4 @@ body {
     padding-left: 18px;
     color: #4facfe;
 }
+
