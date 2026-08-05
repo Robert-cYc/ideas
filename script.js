@@ -471,3 +471,13 @@ if (graycodeLink) {
 }
 
 
+
+const openrouterLink = document.getElementById("openrouterLink");
+if (openrouterLink) {
+    openrouterLink.addEventListener("click", () => {
+        isProjectMode = false;
+        document.body.classList.remove("matrix-mode");
+        document.documentElement.classList.remove("matrix-mode");
+        sideMenu.classList.remove("active");
+    });
+}

@@ -1,0 +1,196 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenRouter Activity - Particle Universe</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        html, body { overflow: hidden; }
+        #particleCanvas { z-index: 0 !important; }
+        .menu-container { z-index: 1000 !important; }
+        .side-menu { z-index: 999 !important; }
+
+        .or-page {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .or-topbar {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 0 80px 0 80px;
+            height: 60px;
+            background: rgba(5,5,5,0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+
+        .or-topbar h1 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #a78bfa, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .or-topbar .open-link {
+            margin-left: auto;
+            font-size: 0.8rem;
+            color: #505050;
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 5px 14px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .or-topbar .open-link:hover {
+            color: #a78bfa;
+            border-color: rgba(167,139,250,0.3);
+        }
+
+        .or-frame-wrap {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .or-frame-wrap iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+            background: #fff;
+        }
+
+        /* Shown when iframe is blocked */
+        .blocked-notice {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            text-align: center;
+            padding: 40px;
+            background: rgba(5,5,5,0.95);
+            z-index: 10;
+        }
+        .blocked-notice .icon { font-size: 3rem; opacity: 0.4; }
+        .blocked-notice h2 { font-size: 1.3rem; font-weight: 500; color: #fff; }
+        .blocked-notice p { font-size: 0.9rem; color: #606060; max-width: 440px; line-height: 1.7; }
+        .blocked-notice a {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 10px 28px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #7c3aed, #3b82f6);
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: opacity 0.2s;
+        }
+        .blocked-notice a:hover { opacity: 0.85; }
+        .blocked-notice .dismiss {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #505050;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+        }
+        .blocked-notice .dismiss:hover { color: #a0a0a0; }
+    </style>
+</head>
+
+<body>
+    <div class="menu-container">
+        <button id="menuBtn" class="menu-btn">
+            <span></span><span></span><span></span>
+        </button>
+        <div id="sideMenu" class="side-menu">
+            <ul>
+                <li><a href="index.html">Homepage</a></li>
+                <li><a href="#" id="matrixLink">Matrix</a></li>
+                <li><a href="ai-news.html">AI NEWS</a></li>
+                <li><a href="graycode.html">Graycode Converter</a></li>
+                <li><a href="openrouter.html" class="active">OpenRouter Activity</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="or-page">
+        <div class="or-topbar">
+            <h1>OpenRouter Activity</h1>
+            <a href="https://openrouter.ai/activity" target="_blank" class="open-link">Open in new tab ↗</a>
+        </div>
+        <div class="or-frame-wrap">
+            <!-- Fallback notice if browser blocks the iframe -->
+            <div class="blocked-notice" id="blockedNotice" style="display:none;">
+                <div class="icon">🚫</div>
+                <h2>Embedding Blocked</h2>
+                <p>OpenRouter prevents its pages from being embedded in iframes (<code>X-Frame-Options</code>). You need to open it directly in a new tab.</p>
+                <a href="https://openrouter.ai/activity" target="_blank">Open OpenRouter Activity ↗</a>
+                <button class="dismiss open-link" onclick="document.getElementById('blockedNotice').style.display='none'">Dismiss</button>
+            </div>
+            <iframe
+                id="orFrame"
+                src="https://openrouter.ai/activity"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                referrerpolicy="no-referrer"
+                title="OpenRouter Activity"
+            ></iframe>
+        </div>
+    </div>
+
+    <script src="mottos.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Detect if iframe was blocked (load fires but content is empty, or error)
+        var frame = document.getElementById('orFrame');
+        var notice = document.getElementById('blockedNotice');
+
+        frame.addEventListener('load', function() {
+            try {
+                // If cross-origin block, accessing contentDocument throws or is null
+                var doc = frame.contentDocument || frame.contentWindow.document;
+                if (!doc || doc.body === null || doc.body.innerHTML === '') {
+                    notice.style.display = 'flex';
+                }
+            } catch(e) {
+                // SecurityError = page loaded but cross-origin blocked content
+                // This usually means it DID load (just cross-origin) — show notice
+                notice.style.display = 'flex';
+            }
+        });
+
+        frame.addEventListener('error', function() {
+            notice.style.display = 'flex';
+        });
+
+        // Show notice after 5s if frame seems stuck
+        setTimeout(function() {
+            try {
+                var doc = frame.contentDocument || frame.contentWindow.document;
+                if (!doc || doc.readyState === 'complete' && doc.body && doc.body.innerHTML === '') {
+                    notice.style.display = 'flex';
+                }
+            } catch(e) {
+                notice.style.display = 'flex';
+            }
+        }, 5000);
+    </script>
+</body>
+
+</html>
