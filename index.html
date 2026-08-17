@@ -4,8 +4,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Particles</title>
+    <title>Particle Universe</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* HUD Floating Glass Panel */
+        .hud-toggle-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(79, 172, 254, 0.35);
+            backdrop-filter: blur(14px);
+            color: #38bdf8;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            z-index: 100;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 15px rgba(56, 189, 248, 0.2);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .hud-toggle-btn:hover {
+            transform: scale(1.1) rotate(45deg);
+            border-color: #38bdf8;
+            box-shadow: 0 8px 30px rgba(56, 189, 248, 0.4);
+        }
+
+        .hud-panel {
+            position: fixed;
+            bottom: 84px;
+            right: 24px;
+            width: 320px;
+            background: rgba(10, 15, 25, 0.85);
+            border: 1px solid rgba(79, 172, 254, 0.25);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 22px;
+            z-index: 100;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(79, 172, 254, 0.12);
+            transform: translateY(20px) scale(0.95);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .hud-panel.open {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .hud-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .hud-title {
+            font-size: 1rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .hud-close {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .hud-close:hover {
+            color: #ffffff;
+        }
+
+        .hud-group {
+            margin-bottom: 16px;
+        }
+
+        .hud-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .hud-label span.val {
+            color: #38bdf8;
+            font-family: monospace;
+        }
+
+        .hud-slider {
+            width: 100%;
+            height: 5px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .hud-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 10px #38bdf8;
+            transition: transform 0.1s;
+        }
+
+        .hud-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+        }
+
+        .theme-pills {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .theme-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 8px 10px;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .theme-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+
+        .theme-btn.active {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: #38bdf8;
+            color: #38bdf8;
+            font-weight: 600;
+        }
+
+        .mode-toggle-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            padding: 8px;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            color: #050505;
+            font-weight: 600;
+            border: none;
+        }
+
+        .custom-text-input {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.85rem;
+            outline: none;
+            margin-top: 6px;
+        }
+
+        .custom-text-input:focus {
+            border-color: #38bdf8;
+        }
+
+        /* Mode prompt in bottom center */
+        .interaction-hint {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .interaction-hint span.badge {
+            background: rgba(56, 189, 248, 0.2);
+            color: #38bdf8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+    </style>
 </head>
 
 <body>
@@ -26,11 +262,82 @@
             </ul>
         </div>
     </div>
+
     <canvas id="particleCanvas"></canvas>
-    <div class="content" style="display: none;">
-        <h1>Particle Universe</h1>
-        <p>Interactive web experience</p>
+
+    <!-- Bottom Interaction Hint -->
+    <div class="interaction-hint">
+        <span>Click for <span class="badge">Supernova</span> • Hold Left-Click for <span class="badge">Black Hole</span></span>
     </div>
+
+    <!-- HUD Toggle Button -->
+    <button id="hudToggleBtn" class="hud-toggle-btn" title="Particle Universe Controls">
+        ⚙️
+    </button>
+
+    <!-- Floating HUD Control Panel -->
+    <div id="hudPanel" class="hud-panel">
+        <div class="hud-header">
+            <div class="hud-title">⚡ PARTICLE HUD</div>
+            <button id="hudCloseBtn" class="hud-close">&times;</button>
+        </div>
+
+        <!-- Mouse Interaction Mode -->
+        <div class="hud-group">
+            <div class="hud-label">Mouse Physics</div>
+            <div class="mode-toggle-group">
+                <button id="mouseRepelBtn" class="mode-btn active" onclick="setInteractionMode('repel')">Repel</button>
+                <button id="mouseAttractBtn" class="mode-btn" onclick="setInteractionMode('attract')">Vortex</button>
+            </div>
+        </div>
+
+        <!-- Color Themes -->
+        <div class="hud-group">
+            <div class="hud-label">Color Themes</div>
+            <div class="theme-pills">
+                <button class="theme-btn active" onclick="setTheme('neon', this)">🌌 Neon</button>
+                <button class="theme-btn" onclick="setTheme('galaxy', this)">✨ Galaxy</button>
+                <button class="theme-btn" onclick="setTheme('solar', this)">🔥 Solar</button>
+                <button class="theme-btn" onclick="setTheme('matrix', this)">🟢 Matrix</button>
+            </div>
+        </div>
+
+        <!-- Density Slider -->
+        <div class="hud-group">
+            <div class="hud-label">
+                <span>Particle Count</span>
+                <span id="densityVal" class="val">180</span>
+            </div>
+            <input type="range" id="densitySlider" class="hud-slider" min="60" max="350" value="180">
+        </div>
+
+        <!-- Speed Slider -->
+        <div class="hud-group">
+            <div class="hud-label">
+                <span>Velocity</span>
+                <span id="speedVal" class="val">1.0x</span>
+            </div>
+            <input type="range" id="speedSlider" class="hud-slider" min="0.2" max="3.0" step="0.1" value="1.0">
+        </div>
+
+        <!-- Connection Distance Slider -->
+        <div class="hud-group">
+            <div class="hud-label">
+                <span>Web Distance</span>
+                <span id="distVal" class="val">140px</span>
+            </div>
+            <input type="range" id="distSlider" class="hud-slider" min="50" max="250" value="140">
+        </div>
+
+        <!-- Custom Text Assemble -->
+        <div class="hud-group" style="margin-bottom: 0;">
+            <div class="hud-label">
+                <span>Assemble Custom Text</span>
+            </div>
+            <input type="text" id="customTextInput" class="custom-text-input" placeholder="Type text & press Enter..." maxlength="20">
+        </div>
+    </div>
+
     <script src="mottos.js"></script>
     <script src="script.js"></script>
 </body>
