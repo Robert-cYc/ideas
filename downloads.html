@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Downloads - Particle Universe</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .downloads-page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #050505 0%, #0a0a0a 100%);
+            z-index: 2;
+            padding: 80px 40px 60px;
+            overflow-x: hidden;
+        }
+
+        .downloads-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .downloads-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .downloads-header h1 {
+            font-size: 3rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .downloads-header p {
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: #a0a0a0;
+            letter-spacing: 1px;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        .download-sections {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+            margin-bottom: 40px;
+        }
+
+        .download-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .download-section:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(79, 172, 254, 0.3);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.1);
+        }
+
+        .section-type {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+
+        .section-type .icon { font-size: 1.6rem; }
+
+        .section-type .tag {
+            background: rgba(79, 172, 254, 0.2);
+            color: #4facfe;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+        }
+
+        .download-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 16px;
+        }
+
+        .download-item:last-child { border-bottom: none; }
+
+        .download-desc h3 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .download-desc p {
+            font-size: 0.85rem;
+            color: #808080;
+            line-height: 1.5;
+        }
+
+        .dl-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .dl-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .dl-btn.secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .dl-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px 28px;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .stat-item .stat-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-item .stat-label {
+            font-size: 0.8rem;
+            color: #808080;
+            margin-top: 4px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 40px;
+            color: #4facfe;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 300;
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: #00f2fe;
+            padding-left: 10px;
+        }
+
+        .scripts-table {
+            width: 100%;
+        }
+
+        .scripts-table-header {
+            display: grid;
+            grid-template-columns: 2fr 4fr 1fr;
+            gap: 16px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #4facfe;
+            text-transform: uppercase;
+        }
+
+        .scripts-row {
+            display: grid;
+            grid-template-columns: 2fr 4fr 1fr;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .script-filename {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: monospace;
+            font-size: 0.95rem;
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        .script-icon { font-size: 1.1rem; }
+
+        .script-desc-cell {
+            font-size: 0.85rem;
+            color: #808080;
+            line-height: 1.5;
+        }
+
+        html, body { overflow-y: auto; }
+        html.matrix-mode { overflow: hidden; }
+        #particleCanvas { z-index: 0 !important; }
+        .downloads-page { z-index: 2 !important; }
+        .menu-container { z-index: 1000 !important; }
+        .side-menu { z-index: 999 !important; }
+
+        body.matrix-mode .downloads-page {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        body.matrix-mode #particleCanvas { z-index: 1 !important; }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <button id="menuBtn" class="menu-btn">
+            <span></span><span></span><span></span>
+        </button>
+        <div id="sideMenu" class="side-menu">
+            <ul>
+                <li><a href="index.html" id="homeLink">Homepage</a></li>
+                <li><a href="#" id="matrixLink">Matrix</a></li>
+                <li><a href="ai-news.html" id="aiNewsLink">AI NEWS</a></li>
+                <li><a href="graycode.html" id="graycodeLink">Graycode Converter</a></li>
+                <li><a href="openrouter.html" id="openrouterLink">OpenRouter Activity</a></li>
+                <li><a href="downloads.html" id="downloadsLink" class="active">Downloads</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="downloads-page">
+        <div class="downloads-container">
+            <div class="downloads-header">
+                <h1>Downloads</h1>
+
+            </div>
+
+            <div class="download-sections">
+
+                <div class="download-section">
+                    <div class="section-type">
+                        <span class="icon">⚡</span>
+                        <span>Scripts</span>
+                        <span class="tag">PowerShell</span>
+                    </div>
+                    <div class="scripts-table">
+                        <div class="scripts-table-header">
+                            <span>File Name</span>
+                            <span>Description</span>
+                            <span>Download</span>
+                        </div>
+                        <div class="download-item scripts-row">
+                            <span class="script-filename">
+                                <span class="script-icon">📜</span>
+                                run-llama.ps1
+                            </span>
+                            <span class="script-desc-cell">A PowerShell script to run a local LLM (Large Language Model) with an interactive prompt interface.</span>
+                            <button onclick="downloadFile('run-llama.ps1')" class="dl-btn">
+                                ⬇ Download
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <a href="index.html" class="back-link">Back to Particle Universe</a>
+        </div>
+    </div>
+
+    <script src="mottos.js"></script>
+    <script src="script.js"></script>
+    <script>
+        function downloadFile(filename) {
+            fetch(filename)
+                .then(res => {
+                    if (!res.ok) throw new Error('File not found');
+                    return res.blob();
+                })
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                })
+                .catch(err => alert('Download failed: ' + err.message));
+        }
+    </script>
+</body>
+</html>

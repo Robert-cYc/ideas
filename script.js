@@ -481,3 +481,13 @@ if (openrouterLink) {
         sideMenu.classList.remove("active");
     });
 }
+
+const downloadsLink = document.getElementById("downloadsLink");
+if (downloadsLink) {
+    downloadsLink.addEventListener("click", () => {
+        isProjectMode = false;
+        document.body.classList.remove("matrix-mode");
+        document.documentElement.classList.remove("matrix-mode");
+        sideMenu.classList.remove("active");
+    });
+}
