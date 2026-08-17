@@ -16,13 +16,19 @@
             min-height: 100vh;
             background: linear-gradient(135deg, #050505 0%, #0a0a0a 100%);
             z-index: 2;
-            padding: 80px 40px 40px;
+            padding: 80px 40px 60px;
             overflow-x: hidden;
+        }
+
+        .news-container {
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .news-header {
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 36px;
+            position: relative;
         }
 
         .news-header h1 {
@@ -42,78 +48,458 @@
             letter-spacing: 1px;
         }
 
+        .header-actions {
+            position: absolute;
+            top: 10px;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .action-btn {
+            background: rgba(79, 172, 254, 0.15);
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            color: #4facfe;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-btn:hover {
+            background: rgba(79, 172, 254, 0.35);
+            border-color: rgba(79, 172, 254, 0.6);
+            color: #ffffff;
+        }
+
+        .action-btn.active {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            color: #050505;
+            font-weight: 600;
+        }
+
+        .refresh-spinner {
+            display: inline-block;
+            transition: transform 0.6s ease;
+        }
+
+        .refresh-spinner.spinning {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Controls Section: Search + Filters */
+        .controls-section {
+            max-width: 1000px;
+            margin: 0 auto 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .search-box-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 14px 20px 14px 46px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            outline: none;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            border-color: rgba(79, 172, 254, 0.6);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.2);
+        }
+
+        .search-box::placeholder {
+            color: #64748b;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 1.1rem;
+            pointer-events: none;
+        }
+
+        .clear-search-btn {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: none;
+            padding: 4px 8px;
+        }
+
+        .clear-search-btn:hover {
+            color: #ffffff;
+        }
+
+        /* Filter Pills */
+        .filter-pills {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .filter-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            user-select: none;
+        }
+
+        .filter-pill:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-color: rgba(79, 172, 254, 0.3);
+        }
+
+        .filter-pill.active {
+            background: rgba(79, 172, 254, 0.22);
+            border-color: #4facfe;
+            color: #38bdf8;
+            font-weight: 500;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+
+        /* News Grid & Cards */
         .news-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
             gap: 24px;
-            max-width: 1400px;
             margin: 0 auto;
         }
 
         .news-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.09);
             backdrop-filter: blur(10px);
             border-radius: 16px;
             padding: 24px;
-            transition: all 0.3s ease;
-            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
 
         .news-card:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.07);
             transform: translateY(-4px);
-            border-color: rgba(79, 172, 254, 0.3);
-            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.1);
+            border-color: rgba(79, 172, 254, 0.35);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(79, 172, 254, 0.1);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
         }
 
         .news-card .category {
-            display: inline-block;
-            background: rgba(79, 172, 254, 0.2);
-            color: #4facfe;
+            background: rgba(79, 172, 254, 0.15);
+            color: #38bdf8;
             font-size: 0.75rem;
             font-weight: 600;
             padding: 4px 12px;
             border-radius: 20px;
-            margin-bottom: 12px;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
         }
 
-        .news-card .date {
-            font-size: 0.8rem;
+        .news-card .date-badge {
+            font-size: 0.78rem;
             color: #808080;
-            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .news-card .title {
-            font-size: 1.2rem;
+            font-size: 1.18rem;
             font-weight: 500;
-            color: #ffffff;
+            color: #f1f5f9;
             margin-bottom: 12px;
-            line-height: 1.4;
+            line-height: 1.45;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .news-card .title:hover {
+            color: #38bdf8;
         }
 
         .news-card .summary {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 300;
-            color: #c0c0c0;
+            color: #94a3b8;
             line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.8rem;
+        }
+
+        .source-pill {
+            color: #38bdf8;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 3px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.2s ease;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .source-pill:hover {
+            background: rgba(79, 172, 254, 0.2);
+            color: #ffffff;
+            border-color: rgba(79, 172, 254, 0.4);
+        }
+
+        .card-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .icon-btn:hover {
+            background: rgba(79, 172, 254, 0.25);
+            color: #ffffff;
+            border-color: #38bdf8;
+        }
+
+        .icon-btn.saved {
+            background: rgba(234, 179, 8, 0.2);
+            border-color: #eab308;
+            color: #facc15;
+        }
+
+        /* Skeleton Loading Cards */
+        .skeleton-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .skeleton-line {
+            height: 14px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 6px;
+        }
+
+        .skeleton-tag { width: 30%; height: 22px; border-radius: 20px; }
+        .skeleton-title { width: 85%; height: 22px; }
+        .skeleton-title-2 { width: 60%; height: 22px; }
+        .skeleton-desc-1 { width: 100%; }
+        .skeleton-desc-2 { width: 95%; }
+        .skeleton-desc-3 { width: 70%; }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Reader Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: #0d1117;
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            border-radius: 20px;
+            max-width: 680px;
+            width: 100%;
+            padding: 32px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(79, 172, 254, 0.15);
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.open .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: #94a3b8;
+            font-size: 1.2rem;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
+
+        .modal-category {
+            display: inline-block;
+            background: rgba(79, 172, 254, 0.2);
+            color: #38bdf8;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 20px;
             margin-bottom: 16px;
         }
 
-        .news-card .source {
-            font-size: 0.8rem;
-            color: #606060;
-            word-break: break-all;
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 14px;
+            line-height: 1.4;
         }
 
-        .news-card .source a {
-            color: #4facfe;
-            text-decoration: none;
+        .modal-date {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 20px;
         }
 
-        .news-card .source a:hover {
-            text-decoration: underline;
+        .modal-summary {
+            font-size: 1.02rem;
+            color: #cbd5e1;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .modal-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: flex-end;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 20px;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid #38bdf8;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            font-size: 0.9rem;
+            z-index: 3000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
         }
 
         .back-link {
@@ -132,65 +518,31 @@
             padding-left: 10px;
         }
 
-        /* Language toggle button */
-        .lang-toggle {
-            position: absolute;
-            top: 20px;
-            right: 80px;
-            background: rgba(79, 172, 254, 0.2);
-            border: 1px solid rgba(79, 172, 254, 0.3);
-            color: #4facfe;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            z-index: 10;
-        }
-        .lang-toggle:hover {
-            background: rgba(79, 172, 254, 0.4);
-            border-color: rgba(79, 172, 254, 0.6);
-        }
-        .lang-toggle.active {
-            background: rgba(79, 172, 254, 0.6);
-            color: #050505;
-        }/* Allow scrolling on news page */
-        html, body {
-            overflow-y: auto;
-        }
-        /* Hide scrollbar when in matrix mode */
-        html.matrix-mode {
-            overflow: hidden;
+        @media (max-width: 768px) {
+            .news-header h1 { font-size: 2.2rem; }
+            .header-actions {
+                position: static;
+                justify-content: center;
+                margin-top: 16px;
+            }
+            .news-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
-        /* Ensure canvas is behind content and menu */
-        #particleCanvas {
-            z-index: 0 !important;
-        }
+        html, body { overflow-y: auto; }
+        html.matrix-mode { overflow: hidden; }
+        #particleCanvas { z-index: 0 !important; }
+        .news-page { z-index: 2 !important; }
+        .menu-container { z-index: 1000 !important; }
+        .side-menu { z-index: 999 !important; }
 
-        /* Ensure news page is above canvas but below menu */
-        .news-page {
-            z-index: 2 !important;
-        }
-
-        /* Ensure menu is on top */
-        .menu-container {
-            z-index: 1000 !important;
-        }
-
-        .side-menu {
-            z-index: 999 !important;
-        }
-
-        /* Hide news content and raise canvas when Matrix mode is active */
         body.matrix-mode .news-page {
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
-        body.matrix-mode #particleCanvas {
-            z-index: 1 !important;
-        }
+        body.matrix-mode #particleCanvas { z-index: 1 !important; }
     </style>
 </head>
 
@@ -216,23 +568,65 @@
     <canvas id="particleCanvas"></canvas>
 
     <div class="news-page">
-        <div class="news-header">
-            <h1>AI 新聞</h1>
-            <p>最新人工智慧技術動態與行業資訊</p>
-            <div id="updateInfo" style="color: #606060; font-size: 0.85rem; margin-top: 10px; cursor: pointer;"></div>
-            <div id="langToggle" class="lang-toggle">EN / 繁中</div>
+        <div class="news-container">
+            <div class="news-header">
+                <h1 id="pageTitle">AI 新聞</h1>
+                <p id="pageSubtitle">最新人工智慧技術動態與行業資訊</p>
+                <div id="updateInfo" style="color: #64748b; font-size: 0.85rem; margin-top: 10px;"></div>
 
+                <div class="header-actions">
+                    <button id="refreshBtn" class="action-btn" title="Refresh news feeds">
+                        <span class="refresh-spinner" id="refreshSpinner">🔄</span>
+                        <span id="refreshLabel">Refresh</span>
+                    </button>
+                    <button id="langToggle" class="action-btn">EN / 繁中</button>
+                </div>
+            </div>
+
+            <!-- Controls: Search & Category Pills -->
+            <div class="controls-section">
+                <div class="search-box-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" class="search-box" placeholder="Search news, topics, companies..." autocomplete="off">
+                    <button id="clearSearchBtn" class="clear-search-btn" title="Clear search">✕</button>
+                </div>
+
+                <div class="filter-pills" id="filterPills">
+                    <!-- Category pills populated by JS -->
+                </div>
+            </div>
+
+            <!-- News Cards Grid -->
+            <div class="news-grid" id="newsGrid">
+                <!-- Skeletons / News cards dynamically populated -->
+            </div>
+
+            <a href="index.html" class="back-link" id="backLink">← 返回粒子宇宙</a>
         </div>
-        <div class="news-grid" id="newsGrid">
-            <!-- News cards will be dynamically inserted here -->
+    </div>
+
+    <!-- Quick Reader Modal -->
+    <div id="newsModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" id="modalCloseBtn">&times;</button>
+            <span id="modalCategory" class="modal-category">AI News</span>
+            <h2 id="modalTitle" class="modal-title"></h2>
+            <div id="modalDate" class="modal-date"></div>
+            <div id="modalSummary" class="modal-summary"></div>
+            <div class="modal-actions">
+                <button id="modalShareBtn" class="action-btn">🔗 Copy Link</button>
+                <a id="modalSourceLink" href="#" target="_blank" rel="noopener noreferrer" class="action-btn active">Read Full Article ↗</a>
+            </div>
         </div>
-        <a href="index.html" class="back-link">← 返回粒子宇宙</a>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span id="toastMsg">✓ Copied to clipboard</span>
     </div>
 
     <script src="mottos.js"></script>
     <script src="script.js"></script>
     <script src="ai-news.js"></script>
 </body>
-
 </html>
-
