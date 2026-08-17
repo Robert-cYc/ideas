@@ -45,8 +45,8 @@ window.addEventListener('mouseout', function() {
 
 // Click Shockwave (Supernova)
 window.addEventListener('click', function(e) {
-    // Avoid triggering shockwave when interacting with HUD controls or menu
-    if (e.target.closest('#hudPanel') || e.target.closest('#hudToggleBtn') || e.target.closest('.menu-container')) {
+    // Avoid triggering shockwave in Matrix mode or when interacting with HUD controls/menu
+    if (isProjectMode || e.target.closest('#hudPanel') || e.target.closest('#hudToggleBtn') || e.target.closest('.menu-container')) {
         return;
     }
     createShockwave(e.clientX, e.clientY);
@@ -54,7 +54,7 @@ window.addEventListener('click', function(e) {
 
 // Mouse down / up for holding black hole
 window.addEventListener('mousedown', function(e) {
-    if (e.button === 0 && !e.target.closest('#hudPanel') && !e.target.closest('#hudToggleBtn') && !e.target.closest('.menu-container')) {
+    if (!isProjectMode && e.button === 0 && !e.target.closest('#hudPanel') && !e.target.closest('#hudToggleBtn') && !e.target.closest('.menu-container')) {
         mouse.isDown = true;
     }
 });
@@ -482,60 +482,141 @@ function handleMottoParticles() {
     }
 }
 
-// Matrix Rain Implementation
-const matrixChars = '0123456789@^#*<>ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const matrixFontSize = 28;
-let matrixColumns = [];
+// ----------------------------------------------------
+// 3D MATRIX RAIN TUNNEL & DIGITAL RAIN ENGINE
+// ----------------------------------------------------
+const matrixChars = 'ｦｱｳｴｵｶｷｹｺｻｼｽｾｿﾀﾂﾃﾅﾆﾇﾈﾊﾋﾎﾏﾐﾑﾒﾓﾔﾕﾗﾘﾜ0123456789ABCDEF$#@%*+-=<>';
+let matrix3DColumns = [];
+let matrixAngleX = 0;
+let matrixAngleY = 0;
 
 function initMatrixRain() {
-    const columnCount = Math.floor(canvas.width / matrixFontSize);
-    matrixColumns = [];
-    for (let i = 0; i < columnCount; i++) {
-        matrixColumns.push({
-            x: i * matrixFontSize,
-            y: Math.random() * canvas.height,
-            z: Math.random() * 0.7 + 0.3,
-            speed: Math.random() * 2 + 0.5,
+    matrix3DColumns = [];
+    // Adjusted column count for prominent larger 3D characters
+    const count = Math.min(130, Math.floor((canvas.width * canvas.height) / 11000) + 55);
+
+    for (let i = 0; i < count; i++) {
+        const spreadX = canvas.width * 1.6;
+        const spreadY = canvas.height * 1.6;
+        matrix3DColumns.push({
+            // 3D Coordinates (world space, centered at 0,0)
+            x: (Math.random() - 0.5) * spreadX,
+            y: (Math.random() - 0.5) * spreadY,
+            z: Math.random() * 1100 + 120, // Z depth from camera
+            speed: Math.random() * 1.5 + 1.1, // Gentle cinematic speed
             charIndex: Math.floor(Math.random() * matrixChars.length),
-            trailLength: Math.floor(Math.random() * 3) + 2
+            trailLength: Math.floor(Math.random() * 9) + 7,
+            switchTimer: 0,
+            switchInterval: Math.floor(Math.random() * 7) + 6
         });
     }
 }
 
 function handleMatrixRain() {
-    ctx.fillStyle = 'rgba(0, 10, 0, 0.08)';
+    // Cyberpunk phosphor trail persistence
+    ctx.fillStyle = 'rgba(2, 8, 4, 0.12)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    const fov = 480; // Perspective Focal Length
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    // Smooth camera tilt based on mouse position
+    if (mouse.x !== null && mouse.y !== null) {
+        const targetAngleY = ((mouse.x - centerX) / centerX) * 0.35;
+        const targetAngleX = -((mouse.y - centerY) / centerY) * 0.35;
+        matrixAngleY += (targetAngleY - matrixAngleY) * 0.05;
+        matrixAngleX += (targetAngleX - matrixAngleX) * 0.05;
+    } else {
+        matrixAngleX *= 0.95;
+        matrixAngleY *= 0.95;
+    }
+
+    const cosY = Math.cos(matrixAngleY);
+    const sinY = Math.sin(matrixAngleY);
+    const cosX = Math.cos(matrixAngleX);
+    const sinX = Math.sin(matrixAngleX);
+
     ctx.textBaseline = 'top';
-    ctx.textAlign = 'left';
+    ctx.textAlign = 'center';
 
-    for (let i = 0; i < matrixColumns.length; i++) {
-        const col = matrixColumns[i];
-        const z = col.z;
-        const fontSize = Math.max(12, Math.floor(matrixFontSize * z));
-        ctx.font = `${fontSize}px monospace`;
+    // Sort drops from back to front for clean depth layering
+    matrix3DColumns.sort((a, b) => b.z - a.z);
 
-        const brightness = 0.4 + z * 0.6;
-        ctx.globalAlpha = brightness;
-        ctx.fillStyle = '#00ff88';
-        ctx.fillText(matrixChars[col.charIndex], col.x, col.y);
+    for (let i = 0; i < matrix3DColumns.length; i++) {
+        const col = matrix3DColumns[i];
 
-        for (let t = 1; t <= col.trailLength; t++) {
-            const opacity = Math.max(0, (0.5 - (t * 0.15)) * z);
-            ctx.globalAlpha = opacity;
-            ctx.fillStyle = '#00ff88';
-            ctx.fillText(matrixChars[(col.charIndex + t) % matrixChars.length], col.x, col.y - t * fontSize);
+        // Apply 3D rotation matrix
+        let x1 = col.x * cosY + col.z * sinY;
+        let z1 = -col.x * sinY + col.z * cosY;
+        let y1 = col.y * cosX - z1 * sinX;
+        let z2 = col.y * sinX + z1 * cosX;
+
+        // Skip if behind camera
+        if (z2 < 40) {
+            col.z = 1200;
+            continue;
         }
 
-        ctx.globalAlpha = 1;
-        col.charIndex = (col.charIndex + 1) % matrixChars.length;
-        col.y += col.speed * z;
+        // Perspective 3D -> 2D Projection with significantly larger font size
+        const scale = fov / z2;
+        const screenX = centerX + x1 * scale;
+        const screenY = centerY + y1 * scale;
+        const fontSize = Math.max(12, Math.floor(32 * scale));
+        const glyphSpacing = fontSize * 1.15;
 
-        if (col.y > canvas.height + fontSize * col.trailLength) {
-            col.y = -fontSize * col.trailLength;
-            col.z = Math.random() * 0.7 + 0.3;
-            col.speed = Math.random() * 2 + 0.5;
-            col.trailLength = Math.floor(Math.random() * 3) + 2;
+        // Draw only if visible on screen
+        if (screenX >= -120 && screenX <= canvas.width + 120 && screenY >= -250 && screenY <= canvas.height + 250) {
+            ctx.font = `bold ${fontSize}px "Courier New", monospace`;
+
+            // Head Glyph (Brightest white/cyan-green with electric neon glow)
+            const headChar = matrixChars[col.charIndex];
+            const headBrightness = Math.min(1.0, 420 / z2);
+
+            ctx.shadowBlur = Math.max(8, Math.floor(22 * scale));
+            ctx.shadowColor = '#00ff88';
+            ctx.fillStyle = `rgba(220, 255, 240, ${headBrightness})`;
+            ctx.fillText(headChar, screenX, screenY);
+
+            // Trailing Glyphs with fading green phosphor decay
+            for (let t = 1; t <= col.trailLength; t++) {
+                const trailY = screenY - t * glyphSpacing;
+                const progress = t / col.trailLength;
+                const trailAlpha = (1 - progress) * 0.9 * (380 / z2);
+
+                if (trailAlpha > 0.02) {
+                    ctx.shadowBlur = t === 1 ? 10 : 0;
+                    ctx.shadowColor = '#00ff66';
+                    // Deep emerald fading gradient
+                    const greenVal = Math.floor(255 - progress * 75);
+                    ctx.fillStyle = `rgba(0, ${greenVal}, 120, ${trailAlpha})`;
+                    const trailChar = matrixChars[(col.charIndex + t * 3) % matrixChars.length];
+                    ctx.fillText(trailChar, screenX, trailY);
+                }
+            }
+            ctx.shadowBlur = 0;
+        }
+
+        // Random character flickering
+        col.switchTimer++;
+        if (col.switchTimer >= col.switchInterval) {
+            col.charIndex = (col.charIndex + 1) % matrixChars.length;
+            col.switchTimer = 0;
+        }
+
+        // Move drop downward and gently forward in depth
+        col.y += col.speed * 1.1;
+        col.z -= col.speed * 0.25;
+
+        // Reset drop when past bottom or behind camera
+        const spreadY = canvas.height * 1.6;
+        if (col.y > spreadY / 2 || col.z <= 50) {
+            col.y = -spreadY / 2;
+            col.z = Math.random() * 400 + 800;
+            col.x = (Math.random() - 0.5) * canvas.width * 1.6;
+            col.speed = Math.random() * 1.5 + 1.1;
+            col.trailLength = Math.floor(Math.random() * 9) + 7;
+            col.switchInterval = Math.floor(Math.random() * 7) + 6;
         }
     }
 }

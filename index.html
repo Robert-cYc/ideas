@@ -241,6 +241,15 @@
             font-family: monospace;
             font-size: 0.75rem;
         }
+
+        /* Hide HUD controls and interaction hints when in Matrix mode */
+        body.matrix-mode .hud-toggle-btn,
+        body.matrix-mode .hud-panel,
+        body.matrix-mode .interaction-hint {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
     </style>
 </head>
 

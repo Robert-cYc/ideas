@@ -1,130 +1,329 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenRouter Activity - Particle Universe</title>
+    <title>OpenRouter Activity & Model Hub - Particle Universe</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        html, body { overflow: hidden; }
-        #particleCanvas { z-index: 0 !important; }
-        .menu-container { z-index: 1000 !important; }
-        .side-menu { z-index: 999 !important; }
-
         .or-page {
-            position: fixed;
-            top: 0; left: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100vw;
-            height: 100vh;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #050505 0%, #0a0a0a 100%);
             z-index: 2;
-            display: flex;
-            flex-direction: column;
+            padding: 80px 30px 60px;
+            overflow-x: hidden;
         }
 
-        .or-topbar {
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 0 80px 0 80px;
-            height: 60px;
-            background: rgba(5,5,5,0.85);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255,255,255,0.07);
+        .or-container {
+            max-width: 1300px;
+            margin: 0 auto;
         }
 
-        .or-topbar h1 {
-            font-size: 1.1rem;
-            font-weight: 500;
-            letter-spacing: 1px;
-            background: linear-gradient(135deg, #a78bfa, #38bdf8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .or-topbar .open-link {
-            margin-left: auto;
-            font-size: 0.8rem;
-            color: #505050;
-            text-decoration: none;
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 5px 14px;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-        .or-topbar .open-link:hover {
-            color: #a78bfa;
-            border-color: rgba(167,139,250,0.3);
-        }
-
-        .or-frame-wrap {
-            flex: 1;
-            overflow: hidden;
+        .or-header {
+            text-align: center;
+            margin-bottom: 36px;
             position: relative;
         }
 
-        .or-frame-wrap iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-            background: #fff;
+        .or-header h1 {
+            font-size: 2.8rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
         }
 
-        /* Shown when iframe is blocked */
-        .blocked-notice {
+        .or-header p {
+            font-size: 1rem;
+            font-weight: 300;
+            color: #a0a0a0;
+            letter-spacing: 1px;
+        }
+
+        .header-actions {
             position: absolute;
-            inset: 0;
+            top: 10px;
+            right: 0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .external-btn {
+            background: rgba(167, 139, 250, 0.15);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            color: #c4b5fd;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .external-btn:hover {
+            background: rgba(167, 139, 250, 0.35);
+            color: #ffffff;
+            border-color: #a78bfa;
+        }
+
+        /* Metrics Stats Row */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(167, 139, 250, 0.3);
+        }
+
+        .stat-val {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Outfit', sans-serif;
+            margin-bottom: 4px;
+        }
+
+        .stat-lbl {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        /* Filter & Search Bar */
+        .controls-bar {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-input-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 260px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 18px 12px 42px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 0.9rem;
+            outline: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: #a78bfa;
+            box-shadow: 0 0 15px rgba(167, 139, 250, 0.25);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+        }
+
+        .category-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .cat-pill {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: #94a3b8;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .cat-pill:hover {
+            color: #ffffff;
+            border-color: rgba(167, 139, 250, 0.3);
+        }
+
+        .cat-pill.active {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: #a78bfa;
+            color: #c4b5fd;
+            font-weight: 600;
+        }
+
+        /* Models Grid */
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 20px;
+        }
+
+        .model-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 24px;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
+        }
+
+        .model-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(167, 139, 250, 0.4);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(167, 139, 250, 0.12);
+        }
+
+        .model-top {
+            display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 16px;
-            text-align: center;
-            padding: 40px;
-            background: rgba(5,5,5,0.95);
-            z-index: 10;
+            justify-content: space-between;
+            margin-bottom: 12px;
         }
-        .blocked-notice .icon { font-size: 3rem; opacity: 0.4; }
-        .blocked-notice h2 { font-size: 1.3rem; font-weight: 500; color: #fff; }
-        .blocked-notice p { font-size: 0.9rem; color: #606060; max-width: 440px; line-height: 1.7; }
-        .blocked-notice a {
-            display: inline-block;
-            margin-top: 8px;
-            padding: 10px 28px;
+
+        .model-provider-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: rgba(56, 189, 248, 0.12);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 3px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .model-context-badge {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-family: monospace;
+        }
+
+        .model-name {
+            font-size: 1.18rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .model-desc {
+            font-size: 0.86rem;
+            color: #94a3b8;
+            line-height: 1.55;
+            margin-bottom: 18px;
+            flex-grow: 1;
+        }
+
+        .model-pricing-row {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
-            background: linear-gradient(135deg, #7c3aed, #3b82f6);
-            color: #fff;
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.8rem;
+        }
+
+        .price-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .price-label {
+            color: #64748b;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        .price-val {
+            color: #4ade80;
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 45px;
+            color: #4facfe;
             text-decoration: none;
-            font-size: 0.9rem;
-            transition: opacity 0.2s;
+            font-size: 0.95rem;
+            font-weight: 300;
+            transition: all 0.2s ease;
         }
-        .blocked-notice a:hover { opacity: 0.85; }
-        .blocked-notice .dismiss {
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #505050;
-            cursor: pointer;
-            font-family: 'Outfit', sans-serif;
+
+        .back-link:hover {
+            color: #00f2fe;
+            padding-left: 8px;
         }
-        .blocked-notice .dismiss:hover { color: #a0a0a0; }
+
+        html, body { overflow-y: auto; }
+        html.matrix-mode { overflow: hidden; }
+        #particleCanvas { z-index: 0 !important; }
+        .or-page { z-index: 2 !important; }
+        .menu-container { z-index: 1000 !important; }
+        .side-menu { z-index: 999 !important; }
+
+        body.matrix-mode .or-page {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        body.matrix-mode #particleCanvas { z-index: 1 !important; }
     </style>
 </head>
 
 <body>
     <div class="menu-container">
         <button id="menuBtn" class="menu-btn">
-            <span></span><span></span><span></span>
+            <span></span>
+            <span></span>
+            <span></span>
         </button>
         <div id="sideMenu" class="side-menu">
             <ul>
-                <li><a href="index.html">Homepage</a></li>
+                <li><a href="index.html" id="homeLink">Homepage</a></li>
                 <li><a href="#" id="matrixLink">Matrix</a></li>
-                <li><a href="ai-news.html">AI NEWS</a></li>
-                <li><a href="graycode.html">Graycode Converter</a></li>
-                <li><a href="openrouter.html" class="active">OpenRouter Activity</a></li>
-                <li><a href="downloads.html">Downloads</a></li>
+                <li><a href="ai-news.html" id="aiNewsLink">AI NEWS</a></li>
+                <li><a href="graycode.html" id="graycodeLink">Graycode Converter</a></li>
+                <li><a href="openrouter.html" id="openrouterLink" class="active">OpenRouter Activity</a></li>
+                <li><a href="downloads.html" id="downloadsLink">Downloads</a></li>
             </ul>
         </div>
     </div>
@@ -132,65 +331,255 @@
     <canvas id="particleCanvas"></canvas>
 
     <div class="or-page">
-        <div class="or-topbar">
-            <h1>OpenRouter Activity</h1>
-            <a href="https://openrouter.ai/activity" target="_blank" class="open-link">Open in new tab ↗</a>
-        </div>
-        <div class="or-frame-wrap">
-            <!-- Fallback notice if browser blocks the iframe -->
-            <div class="blocked-notice" id="blockedNotice" style="display:none;">
-                <div class="icon">🚫</div>
-                <h2>Embedding Blocked</h2>
-                <p>OpenRouter prevents its pages from being embedded in iframes (<code>X-Frame-Options</code>). You need to open it directly in a new tab.</p>
-                <a href="https://openrouter.ai/activity" target="_blank">Open OpenRouter Activity ↗</a>
-                <button class="dismiss open-link" onclick="document.getElementById('blockedNotice').style.display='none'">Dismiss</button>
+        <div class="or-container">
+            <div class="or-header">
+                <h1>OpenRouter Model Hub</h1>
+                <p>Real-Time LLM Token Pricing, Context Windows & Intelligence Leaderboard</p>
+                <div class="header-actions">
+                    <a href="https://openrouter.ai/models" target="_blank" rel="noopener noreferrer" class="external-btn">
+                        OpenRouter Portal ↗
+                    </a>
+                </div>
             </div>
-            <iframe
-                id="orFrame"
-                src="https://openrouter.ai/activity"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-                referrerpolicy="no-referrer"
-                title="OpenRouter Activity"
-            ></iframe>
+
+            <!-- Stats KPI Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-val">300+</div>
+                    <div class="stat-lbl">Unified Models</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val">$0.00</div>
+                    <div class="stat-lbl">Free Tier Models Available</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val">1M+</div>
+                    <div class="stat-lbl">Max Context Tokens</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val">99.9%</div>
+                    <div class="stat-lbl">Provider Uptime</div>
+                </div>
+            </div>
+
+            <!-- Controls: Search & Category Pills -->
+            <div class="controls-bar">
+                <div class="search-input-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="modelSearch" class="search-input" placeholder="Search models by name, provider or architecture..." autocomplete="off">
+                </div>
+                <div class="category-pills" id="categoryPills">
+                    <button class="cat-pill active" onclick="filterModels('all')">All Models</button>
+                    <button class="cat-pill" onclick="filterModels('anthropic')">Anthropic</button>
+                    <button class="cat-pill" onclick="filterModels('openai')">OpenAI</button>
+                    <button class="cat-pill" onclick="filterModels('google')">Google</button>
+                    <button class="cat-pill" onclick="filterModels('deepseek')">DeepSeek</button>
+                    <button class="cat-pill" onclick="filterModels('meta')">Meta LLaMA</button>
+                    <button class="cat-pill" onclick="filterModels('free')">🎁 Free</button>
+                </div>
+            </div>
+
+            <!-- Models Grid -->
+            <div class="models-grid" id="modelsGrid">
+                <!-- Populated dynamically via JS -->
+            </div>
+
+            <a href="index.html" class="back-link">← Back to Particle Universe</a>
         </div>
     </div>
 
     <script src="mottos.js"></script>
     <script src="script.js"></script>
     <script>
-        // Detect if iframe was blocked (load fires but content is empty, or error)
-        var frame = document.getElementById('orFrame');
-        var notice = document.getElementById('blockedNotice');
-
-        frame.addEventListener('load', function() {
-            try {
-                // If cross-origin block, accessing contentDocument throws or is null
-                var doc = frame.contentDocument || frame.contentWindow.document;
-                if (!doc || doc.body === null || doc.body.innerHTML === '') {
-                    notice.style.display = 'flex';
-                }
-            } catch(e) {
-                // SecurityError = page loaded but cross-origin blocked content
-                // This usually means it DID load (just cross-origin) — show notice
-                notice.style.display = 'flex';
+        const openRouterModels = [
+            {
+                name: "Claude 3.7 Sonnet (Thinking)",
+                provider: "Anthropic",
+                providerKey: "anthropic",
+                context: "200k",
+                desc: "Anthropic's hybrid flagship model combining rapid response with variable extended thinking capabilities for complex reasoning and engineering.",
+                promptPrice: "$3.00 / M",
+                completionPrice: "$15.00 / M",
+                isFree: false
+            },
+            {
+                name: "Claude 3.5 Sonnet",
+                provider: "Anthropic",
+                providerKey: "anthropic",
+                context: "200k",
+                desc: "State-of-the-art model for coding, logical reasoning, visual comprehension, and multi-step complex system design.",
+                promptPrice: "$3.00 / M",
+                completionPrice: "$15.00 / M",
+                isFree: false
+            },
+            {
+                name: "DeepSeek R1",
+                provider: "DeepSeek",
+                providerKey: "deepseek",
+                context: "128k",
+                desc: "Open-weights reasoning model trained with large-scale reinforcement learning, excelling at math, code and multi-step logical deduction.",
+                promptPrice: "$0.55 / M",
+                completionPrice: "$2.19 / M",
+                isFree: false
+            },
+            {
+                name: "DeepSeek V3",
+                provider: "DeepSeek",
+                providerKey: "deepseek",
+                context: "128k",
+                desc: "Strong 671B MoE architecture delivering lightning-fast generation and exceptional coding proficiency at unbeatable cost.",
+                promptPrice: "$0.14 / M",
+                completionPrice: "$0.28 / M",
+                isFree: false
+            },
+            {
+                name: "GPT-4o",
+                provider: "OpenAI",
+                providerKey: "openai",
+                context: "128k",
+                desc: "OpenAI's high-speed flagship model with multimodal native reasoning, broad knowledge synthesis, and structured JSON output.",
+                promptPrice: "$2.50 / M",
+                completionPrice: "$10.00 / M",
+                isFree: false
+            },
+            {
+                name: "GPT-4o mini",
+                provider: "OpenAI",
+                providerKey: "openai",
+                context: "128k",
+                desc: "Extremely cost-effective, high-throughput lightweight model optimized for high-volume tasks, chatbots and agents.",
+                promptPrice: "$0.15 / M",
+                completionPrice: "$0.60 / M",
+                isFree: false
+            },
+            {
+                name: "Gemini 2.0 Flash",
+                provider: "Google",
+                providerKey: "google",
+                context: "1M",
+                desc: "Next-gen multimodal workhorse model featuring ultra-low latency, 1 Million token context window, and native audio/video understanding.",
+                promptPrice: "$0.10 / M",
+                completionPrice: "$0.40 / M",
+                isFree: false
+            },
+            {
+                name: "Gemini 2.0 Flash Thinking",
+                provider: "Google",
+                providerKey: "google",
+                context: "1M",
+                desc: "Experimental reasoning model by Google that displays step-by-step thinking for deep problem solving.",
+                promptPrice: "Free (Promo)",
+                completionPrice: "Free (Promo)",
+                isFree: true
+            },
+            {
+                name: "Meta LLaMA 3.3 70B Instruct",
+                provider: "Meta",
+                providerKey: "meta",
+                context: "128k",
+                desc: "Meta's flagship open weights model rivaling proprietary 400B+ models in coding, multilingual communication, and math.",
+                promptPrice: "$0.12 / M",
+                completionPrice: "$0.30 / M",
+                isFree: false
+            },
+            {
+                name: "DeepSeek R1 (Free / Community)",
+                provider: "DeepSeek",
+                providerKey: "free",
+                context: "64k",
+                desc: "Community rate-limited free instance of DeepSeek R1 for evaluation and experimental research via OpenRouter free tier.",
+                promptPrice: "$0.00",
+                completionPrice: "$0.00",
+                isFree: true
+            },
+            {
+                name: "Meta LLaMA 3.1 8B Instruct (Free)",
+                provider: "Meta",
+                providerKey: "free",
+                context: "128k",
+                desc: "Fast, versatile 8B open model completely free on OpenRouter, ideal for lightweight summarization and testing.",
+                promptPrice: "$0.00",
+                completionPrice: "$0.00",
+                isFree: true
+            },
+            {
+                name: "Mistral Small 3",
+                provider: "Mistral",
+                providerKey: "other",
+                context: "32k",
+                desc: "Efficient 24B parameter model by Mistral AI, delivering flagship-grade performance on edge hardware and high-throughput servers.",
+                promptPrice: "$0.07 / M",
+                completionPrice: "$0.14 / M",
+                isFree: false
             }
+        ];
+
+        let activeFilter = 'all';
+        let currentSearch = '';
+
+        function renderModels() {
+            const grid = document.getElementById('modelsGrid');
+            if (!grid) return;
+
+            let filtered = openRouterModels.filter(m => {
+                const matchesFilter = (activeFilter === 'all') ||
+                                      (activeFilter === 'free' && m.isFree) ||
+                                      (m.providerKey === activeFilter);
+                
+                const q = currentSearch.toLowerCase();
+                const matchesSearch = !q || m.name.toLowerCase().includes(q) ||
+                                      m.provider.toLowerCase().includes(q) ||
+                                      m.desc.toLowerCase().includes(q);
+
+                return matchesFilter && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #64748b;">
+                        <div style="font-size: 2.5rem; margin-bottom: 10px;">🔍</div>
+                        <p style="font-size: 1.1rem; color: #94a3b8;">No matching models found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(m => `
+                <div class="model-card">
+                    <div class="model-top">
+                        <span class="model-provider-badge">${m.provider}</span>
+                        <span class="model-context-badge">Context: ${m.context}</span>
+                    </div>
+                    <div class="model-name">${m.name}</div>
+                    <div class="model-desc">${m.desc}</div>
+                    <div class="model-pricing-row">
+                        <div class="price-col">
+                            <span class="price-label">Prompt Input</span>
+                            <span class="price-val">${m.promptPrice}</span>
+                        </div>
+                        <div class="price-col" style="text-align: right;">
+                            <span class="price-label">Completion</span>
+                            <span class="price-val">${m.completionPrice}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterModels(key) {
+            activeFilter = key;
+            document.querySelectorAll('.cat-pill').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderModels();
+        }
+
+        document.getElementById('modelSearch').addEventListener('input', (e) => {
+            currentSearch = e.target.value;
+            renderModels();
         });
 
-        frame.addEventListener('error', function() {
-            notice.style.display = 'flex';
-        });
-
-        // Show notice after 5s if frame seems stuck
-        setTimeout(function() {
-            try {
-                var doc = frame.contentDocument || frame.contentWindow.document;
-                if (!doc || doc.readyState === 'complete' && doc.body && doc.body.innerHTML === '') {
-                    notice.style.display = 'flex';
-                }
-            } catch(e) {
-                notice.style.display = 'flex';
-            }
-        }, 5000);
+        // Initialize
+        renderModels();
     </script>
 </body>
 
