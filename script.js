@@ -483,41 +483,84 @@ function handleMottoParticles() {
 }
 
 // ----------------------------------------------------
-// 3D MATRIX RAIN TUNNEL & DIGITAL RAIN ENGINE
+// 3D MULTILINGUAL & MULTICOLOR MATRIX RAIN ENGINE
 // ----------------------------------------------------
-const matrixChars = 'ｦｱｳｴｵｶｷｹｺｻｼｽｾｿﾀﾂﾃﾅﾆﾇﾈﾊﾋﾎﾏﾐﾑﾒﾓﾔﾕﾗﾘﾜ0123456789ABCDEF$#@%*+-=<>';
+// Multilingual character pools: Japanese Katakana, Chinese Hanzi, Greek, Cyrillic, Runic, Math & Cyberpunk Hex
+const matrixChars = [
+    // Japanese Katakana
+    'ｦ','ｱ','ｳ','ｴ','ｵ','ｶ','ｷ','ｹ','ｺ','ｻ','ｼ','ｽ','ｾ','ｿ','ﾀ','ﾂ','ﾃ','ﾅ','ﾆ','ﾇ','ﾈ','ﾊ','ﾋ','ﾎ','ﾏ','ﾐ','ﾑ','ﾒ','ﾓ','ﾔ','ﾕ','ﾗ','ﾘ','ﾜ',
+    // Chinese Characters (Tech, Philosophy, Dao De Jing, Heart Sutra, I Ching, Diamond Sutra)
+    '道','可','常','名','無','名','天','地','之','始','有','名','萬','物','之','母',
+    '玄','同','謂','之','玄','眾','妙','之','門','上','善','若','水','水','善','利',
+    '人','法','地','地','法','天','天','法','道','道','法','自','然','千','里','始',
+    '色','即','是','空','空','即','是','色','受','想','行','識','五','蘊','皆','空',
+    '度','一','切','苦','厄','不','生','不','滅','不','垢','不','淨','不','增','不','減',
+    '心','無','罣','礙','遠','離','顛','倒','夢','想','究','竟','涅','槃','菩','提',
+    '天','行','健','自','強','不','息','地','勢','坤','厚','德','載','物','窮','則','變',
+    '變','則','通','通','則','久','陰','陽','剛','柔','太','極','乾','坤','震','巽','坎','離','艮','兌',
+    '一','切','有','為','法','如','夢','幻','泡','影','如','露','亦','如','電',
+    '凡','所','有','相','皆','是','虛','妄','應','無','所','住','而','生','其','心',
+    '不','取','於','相','如','如','不','動',
+    // Greek Symbols
+    'Ω','Ψ','Φ','Σ','Δ','Γ','Λ','Π','Θ','Ξ','λ','π','μ','σ','α','β','γ',
+    // Cyrillic Glyphs
+    'Ж','Ф','Ц','Ч','Ш','Щ','Ъ','Ы','Ь','Э','Ю','Я','Д','И','Й',
+    // Nordic Runes
+    'ᚠ','ᚢ','ᚦ','ᚨ','ᚱ','ᚲ','ᚷ','ᚹ','ᚺ','ᚾ','ᛁ','ᛃ','ᛈ','ᛉ','ᛊ','ᛏ','ᛒ','ᛖ','ᛗ','ᛚ','ᛞ','ᛟ',
+    // Cyberpunk Hex & Special Math Symbols
+    '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','∞','≠','≈','√','∫','∂','∇','◈','◇','▲','▼','⚡','★','⌬'
+];
+
+// Vibrant Cyberpunk Color Palettes for Matrix streams (with precomputed RGBA colors)
+const MATRIX_PALETTES = [
+    // 0: Classic Matrix Emerald Green
+    { name: 'emerald', head: '#ffffff', glowHead: '#80ffc0', bodyR: 0, bodyG: 255, bodyB: 120 },
+    // 1: Cyber Neon Cyan / Blue
+    { name: 'cyan', head: '#ffffff', glowHead: '#70e0ff', bodyR: 0, bodyG: 200, bodyB: 255 },
+    // 2: Cyberpunk Neon Magenta / Purple
+    { name: 'purple', head: '#ffffff', glowHead: '#f590ff', bodyR: 215, bodyG: 60, bodyB: 255 },
+    // 3: Golden Solar Amber
+    { name: 'amber', head: '#ffffff', glowHead: '#ffd260', bodyR: 255, bodyG: 180, bodyB: 0 },
+    // 4: Electric Acid Lime
+    { name: 'lime', head: '#ffffff', glowHead: '#caff70', bodyR: 165, bodyG: 255, bodyB: 30 },
+    // 5: Crimson Red Cyber
+    { name: 'crimson', head: '#ffffff', glowHead: '#ff8090', bodyR: 255, bodyG: 50, bodyB: 85 }
+];
+
 let matrix3DColumns = [];
 let matrixAngleX = 0;
 let matrixAngleY = 0;
 
 function initMatrixRain() {
     matrix3DColumns = [];
-    // Adjusted column count for prominent larger 3D characters
-    const count = Math.min(130, Math.floor((canvas.width * canvas.height) / 11000) + 55);
+    // Optimized count for silky-smooth 60fps rendering
+    const count = Math.min(85, Math.floor((canvas.width * canvas.height) / 16000) + 40);
 
     for (let i = 0; i < count; i++) {
-        const spreadX = canvas.width * 1.6;
-        const spreadY = canvas.height * 1.6;
+        const spreadX = canvas.width * 1.5;
+        const spreadY = canvas.height * 1.5;
+        const palette = Math.random() < 0.45 ? MATRIX_PALETTES[0] : MATRIX_PALETTES[Math.floor(Math.random() * MATRIX_PALETTES.length)];
+
         matrix3DColumns.push({
-            // 3D Coordinates (world space, centered at 0,0)
             x: (Math.random() - 0.5) * spreadX,
             y: (Math.random() - 0.5) * spreadY,
-            z: Math.random() * 1100 + 120, // Z depth from camera
-            speed: Math.random() * 1.5 + 1.1, // Gentle cinematic speed
+            z: Math.random() * 950 + 150,
+            speed: Math.random() * 0.7 + 0.45, // Slow, peaceful, cinematic pace
             charIndex: Math.floor(Math.random() * matrixChars.length),
-            trailLength: Math.floor(Math.random() * 9) + 7,
+            trailLength: Math.floor(Math.random() * 6) + 6,
             switchTimer: 0,
-            switchInterval: Math.floor(Math.random() * 7) + 6
+            switchInterval: Math.floor(Math.random() * 12) + 12, // Slower, readable character flickering
+            palette: palette
         });
     }
 }
 
 function handleMatrixRain() {
     // Cyberpunk phosphor trail persistence
-    ctx.fillStyle = 'rgba(2, 8, 4, 0.12)';
+    ctx.fillStyle = 'rgba(2, 6, 4, 0.15)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const fov = 480; // Perspective Focal Length
+    const fov = 460;
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
 
@@ -540,83 +583,78 @@ function handleMatrixRain() {
     ctx.textBaseline = 'top';
     ctx.textAlign = 'center';
 
-    // Sort drops from back to front for clean depth layering
-    matrix3DColumns.sort((a, b) => b.z - a.z);
+    let lastFontSize = 0;
 
     for (let i = 0; i < matrix3DColumns.length; i++) {
         const col = matrix3DColumns[i];
+        const pal = col.palette || MATRIX_PALETTES[0];
 
-        // Apply 3D rotation matrix
+        // 3D rotation transform
         let x1 = col.x * cosY + col.z * sinY;
         let z1 = -col.x * sinY + col.z * cosY;
         let y1 = col.y * cosX - z1 * sinX;
         let z2 = col.y * sinX + z1 * cosX;
 
-        // Skip if behind camera
-        if (z2 < 40) {
-            col.z = 1200;
+        if (z2 < 50) {
+            col.z = 1100;
             continue;
         }
 
-        // Perspective 3D -> 2D Projection with significantly larger font size
         const scale = fov / z2;
         const screenX = centerX + x1 * scale;
         const screenY = centerY + y1 * scale;
-        const fontSize = Math.max(12, Math.floor(32 * scale));
-        const glyphSpacing = fontSize * 1.15;
+        const fontSize = Math.max(12, Math.floor(30 * scale));
+        const glyphSpacing = fontSize * 1.12;
 
-        // Draw only if visible on screen
-        if (screenX >= -120 && screenX <= canvas.width + 120 && screenY >= -250 && screenY <= canvas.height + 250) {
-            ctx.font = `bold ${fontSize}px "Courier New", monospace`;
+        if (screenX >= -100 && screenX <= canvas.width + 100 && screenY >= -200 && screenY <= canvas.height + 200) {
+            if (lastFontSize !== fontSize) {
+                ctx.font = `bold ${fontSize}px monospace`;
+                lastFontSize = fontSize;
+            }
 
-            // Head Glyph (Brightest white/cyan-green with electric neon glow)
+            // Head Glyph (Bright & Crisp with subtle halo)
             const headChar = matrixChars[col.charIndex];
-            const headBrightness = Math.min(1.0, 420 / z2);
-
-            ctx.shadowBlur = Math.max(8, Math.floor(22 * scale));
-            ctx.shadowColor = '#00ff88';
-            ctx.fillStyle = `rgba(220, 255, 240, ${headBrightness})`;
+            ctx.fillStyle = pal.glowHead;
             ctx.fillText(headChar, screenX, screenY);
 
-            // Trailing Glyphs with fading green phosphor decay
-            for (let t = 1; t <= col.trailLength; t++) {
-                const trailY = screenY - t * glyphSpacing;
-                const progress = t / col.trailLength;
-                const trailAlpha = (1 - progress) * 0.9 * (380 / z2);
+            // Trailing Glyphs (Rendered efficiently with alpha gradients without heavy blur filters)
+            const pR = pal.bodyR;
+            const pG = pal.bodyG;
+            const pB = pal.bodyB;
+            const len = col.trailLength;
 
-                if (trailAlpha > 0.02) {
-                    ctx.shadowBlur = t === 1 ? 10 : 0;
-                    ctx.shadowColor = '#00ff66';
-                    // Deep emerald fading gradient
-                    const greenVal = Math.floor(255 - progress * 75);
-                    ctx.fillStyle = `rgba(0, ${greenVal}, 120, ${trailAlpha})`;
-                    const trailChar = matrixChars[(col.charIndex + t * 3) % matrixChars.length];
-                    ctx.fillText(trailChar, screenX, trailY);
-                }
+            for (let t = 1; t <= len; t++) {
+                const trailY = screenY - t * glyphSpacing;
+                const progress = t / len;
+                const trailAlpha = (1 - progress) * 0.85;
+
+                ctx.fillStyle = `rgba(${pR}, ${pG}, ${pB}, ${trailAlpha})`;
+                const trailChar = matrixChars[(col.charIndex + t * 3) % matrixChars.length];
+                ctx.fillText(trailChar, screenX, trailY);
             }
-            ctx.shadowBlur = 0;
         }
 
-        // Random character flickering
+        // Random character flickering (peaceful interval)
         col.switchTimer++;
         if (col.switchTimer >= col.switchInterval) {
             col.charIndex = (col.charIndex + 1) % matrixChars.length;
             col.switchTimer = 0;
         }
 
-        // Move drop downward and gently forward in depth
-        col.y += col.speed * 1.1;
-        col.z -= col.speed * 0.25;
+        // Move drop downward and gently forward in 3D (Subtle & slow)
+        col.y += col.speed * 0.65;
+        col.z -= col.speed * 0.12;
 
-        // Reset drop when past bottom or behind camera
-        const spreadY = canvas.height * 1.6;
+        // Recycle drop
+        const spreadY = canvas.height * 1.5;
         if (col.y > spreadY / 2 || col.z <= 50) {
             col.y = -spreadY / 2;
-            col.z = Math.random() * 400 + 800;
-            col.x = (Math.random() - 0.5) * canvas.width * 1.6;
-            col.speed = Math.random() * 1.5 + 1.1;
-            col.trailLength = Math.floor(Math.random() * 9) + 7;
-            col.switchInterval = Math.floor(Math.random() * 7) + 6;
+            col.z = Math.random() * 350 + 750;
+            col.x = (Math.random() - 0.5) * canvas.width * 1.5;
+            col.speed = Math.random() * 0.7 + 0.45;
+            col.trailLength = Math.floor(Math.random() * 6) + 6;
+            col.switchInterval = Math.floor(Math.random() * 12) + 12;
+            col.palette = Math.random() < 0.45 ? MATRIX_PALETTES[0] : MATRIX_PALETTES[Math.floor(Math.random() * MATRIX_PALETTES.length)];
         }
     }
 }
