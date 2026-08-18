@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLC Timer Sim - Particle Universe</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===== Particle Universe Page Overlay ===== */
+        .plc-page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #050505 0%, #0a0a0a 100%);
+            z-index: 2;
+            padding: 80px 30px 60px;
+            overflow-x: hidden;
+        }
+
+        html, body { overflow-y: auto; }
+        html.matrix-mode { overflow: hidden; }
+        #particleCanvas { z-index: 0 !important; }
+        .plc-page { z-index: 2 !important; }
+        .menu-container { z-index: 1000 !important; }
+        .side-menu { z-index: 999 !important; }
+
+        body.matrix-mode .plc-page {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        body.matrix-mode #particleCanvas { z-index: 1 !important; }
+
+        /* ===== PLC Timer Simulator Styles ===== */
+        .simulator-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .plc-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(22, 33, 52, 0.8);
+            border-radius: 12px;
+            border: 2px solid rgba(15, 52, 96, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .plc-header h1 {
+            color: #e94560;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .plc-header p {
+            color: #a0a0b0;
+            font-size: 0.9em;
+        }
+
+        .controls-panel {
+            background: rgba(22, 33, 52, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(15, 52, 96, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            color: #e94560;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .control-group select,
+        .control-group input {
+            padding: 8px 12px;
+            border: 2px solid rgba(15, 52, 96, 0.5);
+            border-radius: 6px;
+            background: rgba(15, 52, 96, 0.5);
+            color: #e0e0e0;
+            font-family: inherit;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            border-color: #e94560;
+        }
+
+        .preset-input {
+            width: 120px;
+            text-align: center;
+        }
+
+        .master-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #4a4a6a;
+            border-radius: 30px;
+            transition: 0.4s;
+            border: 2px solid rgba(15, 52, 96, 0.5);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: #e0e0e0;
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+
+        input:checked + .slider {
+            background-color: #e94560;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        .toggle-label {
+            font-weight: bold;
+            color: #e0e0e0;
+        }
+
+        .timers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .timer-card {
+            background: rgba(22, 33, 52, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid rgba(15, 52, 96, 0.5);
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .timer-card.active {
+            border-color: #e94560;
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
+        }
+
+        .timer-card.timer-finished {
+            border-color: #4ecca3;
+            box-shadow: 0 0 20px rgba(78, 204, 163, 0.4);
+        }
+
+        .timer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(15, 52, 96, 0.5);
+        }
+
+        .timer-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #e94560;
+        }
+
+        .timer-type-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-ton { background: rgba(15, 52, 96, 0.7); color: #4fc3f7; }
+        .badge-tof { background: rgba(15, 52, 96, 0.7); color: #ffb74d; }
+        .badge-rto { background: rgba(15, 52, 96, 0.7); color: #ba68c8; }
+        .badge-tp { background: rgba(15, 52, 96, 0.7); color: #f06292; }
+
+        .timer-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .display-item {
+            background: rgba(15, 52, 96, 0.5);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .display-item .label {
+            font-size: 0.75em;
+            color: #a0a0b0;
+            margin-bottom: 5px;
+        }
+
+        .display-item .value {
+            font-size: 1.4em;
+            font-weight: bold;
+        }
+
+        .value.preset { color: #4fc3f7; }
+        .value.elapsed { color: #ffb74d; }
+        .value.remaining { color: #ba68c8; }
+        .value.done { color: #4ecca3; }
+
+        .timer-status {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+        }
+
+        .status-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-label {
+            font-size: 0.75em;
+            color: #a0a0b0;
+        }
+
+        .status-light {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #4a4a6a;
+        }
+
+        .light-on {
+            background: #e94560;
+            box-shadow: 0 0 10px #e94560;
+        }
+
+        .light-off {
+            background: #333;
+            box-shadow: none;
+        }
+
+        .light-done {
+            background: #4ecca3;
+            box-shadow: 0 0 10px #4ecca3;
+        }
+
+        .progress-container {
+            background: rgba(15, 52, 96, 0.5);
+            border-radius: 8px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.1s linear;
+            background: linear-gradient(90deg, #4fc3f7, #ffb74d);
+        }
+
+        .progress-bar.done {
+            background: linear-gradient(90deg, #4ecca3, #69f0ae);
+        }
+
+        .timer-description {
+            font-size: 0.8em;
+            color: #a0a0b0;
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(10, 17, 26, 0.8);
+            border-radius: 6px;
+            border-left: 3px solid rgba(15, 52, 96, 0.5);
+        }
+
+        .timer-description.ton { border-left-color: #4fc3f7; }
+        .timer-description.tof { border-left-color: #ffb74d; }
+        .timer-description.rto { border-left-color: #ba68c8; }
+        .timer-description.tp { border-left-color: #f06292; }
+
+        .reset-btn {
+            padding: 8px 16px;
+            background: rgba(15, 52, 96, 0.5);
+            color: #e0e0e0;
+            border: 2px solid #e94560;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9em;
+            margin-top: 10px;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .reset-btn:hover {
+            background: #e94560;
+            color: #162134;
+        }
+
+        .instructions {
+            background: rgba(22, 33, 52, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid rgba(15, 52, 96, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .instructions h2 {
+            color: #e94560;
+            margin-bottom: 15px;
+        }
+
+        .instructions ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(15, 52, 96, 0.5);
+            border-radius: 6px;
+        }
+
+        .instructions li strong {
+            color: #4fc3f7;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #606070;
+            font-size: 0.85em;
+        }
+
+        .preset-unit {
+            font-size: 0.75em;
+            color: #a0a0b0;
+        }
+
+        /* Trend Chart Section */
+        .trend-chart-section {
+            background: rgba(22, 33, 52, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid rgba(15, 52, 96, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .trend-chart-section h3 {
+            color: #e94560;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .trend-chart-section canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #0a0a1b;
+            border: 1px solid rgba(15, 52, 96, 0.5);
+            border-radius: 6px;
+        }
+
+        .trend-legend {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8em;
+        }
+
+        .legend-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            border: 1px solid #4a4a6a;
+        }
+
+        .swatch-input { background: #4fc3f7; }
+        .swatch-output { background: #ffb74d; }
+        .swatch-done { background: #4ecca3; }
+        .swatch-progress { background: linear-gradient(90deg, #4fc3f7, #ffb74d); }
+
+        /* Ladder logic visualization */
+        .trend-wrapper {
+            margin: 15px 0;
+        }
+
+        .trend-label {
+            font-size: 0.7em;
+            color: #a0a0b0;
+            margin-bottom: 4px;
+        }
+
+        .trend-canvas {
+            display: block;
+            background: #0a0a1b;
+            border: 1px solid rgba(15, 52, 96, 0.5);
+            border-radius: 6px;
+            width: 100%;
+            height: auto;
+        }
+
+        .ladder-container {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(10, 17, 26, 0.8);
+            border-radius: 8px;
+            border: 1px solid rgba(15, 52, 96, 0.5);
+            overflow-x: auto;
+        }
+
+        .ladder-rung {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.6;
+            white-space: pre;
+            color: #a0c4ff;
+        }
+
+        .ladder-rung .input { color: #4fc3f7; }
+        .ladder-rung .timer { color: #ffb74d; }
+        .ladder-rung .output { color: #f06292; }
+        .ladder-rung .done { color: #4ecca3; }
+        .ladder-rung .-- { color: #555; }
+
+        @media (max-width: 768px) {
+            .timers-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="menu-container">
+        <button id="menuBtn" class="menu-btn">
+            <span></span><span></span><span></span>
+        </button>
+        <div id="sideMenu" class="side-menu">
+            <ul>
+                <li><a href="index.html" id="homeLink">Homepage</a></li>
+                <li><a href="#" id="matrixLink">Matrix</a></li>
+                <li><a href="ai-news.html" id="aiNewsLink">AI NEWS</a></li>
+                <li><a href="graycode.html" id="graycodeLink">Graycode Converter</a></li>
+                <li><a href="openrouter.html" id="openrouterLink">OpenRouter Activity</a></li>
+                <li><a href="downloads.html" id="downloadsLink">Downloads</a></li>
+                <li><a href="plc-timer.html" id="plcTimerLink" class="active">PLC Timer Sim</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="plc-page">
+        <div class="simulator-container">
+            <div class="plc-header">
+                <h1>PLC Timer Sim</h1>
+                <p>Interactive simulation of TON, TOF, RTO, and TP timers</p>
+            </div>
+
+            <div class="controls-panel">
+                <div class="controls-row">
+                    <div class="control-group">
+                        <label for="preset-input">Preset Time (seconds)</label>
+                        <input type="number" id="preset-input" class="preset-input" value="5.0" min="0.1" step="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label for="timer-select">Select Timer Type</label>
+                        <select id="timer-select">
+                            <option value="all">All Timers</option>
+                            <option value="ton-tof">TON &amp; TOF - Basic Timers</option>
+                            <option value="ton">TON - On-Delay Timer</option>
+                            <option value="tof">TOF - Off-Delay Timer</option>
+                            <option value="rto">RTO - Retentive Timer</option>
+                            <option value="tp">TP - Pulse Timer</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="time-scale">Time Scale</label>
+                        <select id="time-scale">
+                            <option value="1">Real-time (1x)</option>
+                            <option value="5">5x Fast</option>
+                            <option value="10" selected>10x Fast</option>
+                            <option value="50">50x Fast</option>
+                        </select>
+                    </div>
+                    <div class="master-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="master-input">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="toggle-label">MASTER INPUT</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timers-grid" id="timers-grid">
+                <!-- Timers will be populated by JavaScript -->
+            </div>
+
+            <div class="trend-chart-section">
+                <h3>Trend Chart - 5 Minute Simulation Window</h3>
+                <div class="trend-legend">
+                    <div class="legend-item"><span class="legend-swatch swatch-input"></span> Input (IN)</div>
+                    <div class="legend-item"><span class="legend-swatch swatch-output"></span> Output (OUT)</div>
+                    <div class="legend-item"><span class="legend-swatch swatch-done"></span> Done (DN)</div>
+                    <div class="legend-item"><span class="legend-swatch swatch-progress"></span> Progress (vs Preset)</div>
+                </div>
+                <canvas id="full-trend-canvas" width="1400" height="320"></canvas>
+            </div>
+
+            <div class="instructions">
+                <h2>Timer Descriptions &amp; Logic</h2>
+                <ul>
+                    <li><strong>TON (On-Delay Timer):</strong> When input turns ON, the timer starts. Output turns ON after the preset time elapses while input remains ON. Output turns OFF immediately when input turns OFF.</li>
+                    <li><strong>TOF (Off-Delay Timer):</strong> Output is ON when input is ON. When input turns OFF, the timer starts. Output remains ON for the preset duration, then turns OFF.</li>
+                    <li><strong>RTO (Retentive Timer):</strong> Accumulates time while input is ON. Output turns ON when accumulated time reaches the preset. Time is retained (paused) when input is OFF. Must be manually reset.</li>
+                    <li><strong>TP (Pulse Timer):</strong> When triggered by a rising edge on the input, the timer starts. Output turns ON immediately and stays ON for the preset duration, regardless of subsequent input changes. Then output turns OFF.</li>
+                </ul>
+            </div>
+
+            <div class="footer">
+                <p>PLC Timer Sim — Educational Purpose | Time Scale: <span id="current-scale">10x</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="mottos.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // ===== Timer Classes =====
+        class TOTimer {
+            constructor(id, preset) {
+                this.id = id;
+                this.preset = preset;
+                this.elapsed = 0;
+                this.input = false;
+                this.output = false;
+                this.accumulated = 0;
+                this.done = false;
+                this.triggered = false;
+                this.lastInput = false;
+                this.history = [];
+            }
+
+            get type() { return 'TON'; }
+            get label() { return 'TON - On-Delay Timer'; }
+            get badgeClass() { return 'badge-ton'; }
+            get descClass() { return 'ton'; }
+
+            reset() {
+                this.elapsed = 0;
+                this.input = false;
+                this.output = false;
+                this.accumulated = 0;
+                this.done = false;
+                this.triggered = false;
+                this.lastInput = false;
+            }
+
+            update(dt, masterInput) {
+                this.input = masterInput;
+
+                if (this.input && !this.lastInput) {
+                    this.triggered = true;
+                    this.elapsed = 0;
+                    this.done = false;
+                }
+
+                if (this.input && this.triggered) {
+                    this.elapsed += dt;
+                    if (this.elapsed >= this.preset) {
+                        this.output = true;
+                        this.done = true;
+                    }
+                } else if (!this.input) {
+                    this.triggered = false;
+                    this.elapsed = 0;
+                    this.output = false;
+                    this.done = false;
+                }
+
+                this.lastInput = this.input;
+            }
+
+            get elapsedValue() { return this.elapsed.toFixed(2); }
+            get remainingValue() {
+                if (!this.input || this.done) return '0.00';
+                const rem = Math.max(0, this.preset - this.elapsed);
+                return rem.toFixed(2);
+            }
+            get progressPct() {
+                if (this.preset === 0) return 100;
+                return Math.min(100, (this.elapsed / this.preset) * 100);
+            }
+        }
+
+        class TOFTimer {
+            constructor(id, preset) {
+                this.id = id;
+                this.preset = preset;
+                this.elapsed = 0;
+                this.input = false;
+                this.output = false;
+                this.accumulated = 0;
+                this.done = false;
+                this.triggered = false;
+                this.lastInput = false;
+                this.history = [];
+            }
+
+            get type() { return 'TOF'; }
+            get label() { return 'TOF - Off-Delay Timer'; }
+            get badgeClass() { return 'badge-tof'; }
+            get descClass() { return 'tof'; }
+
+            reset() {
+                this.elapsed = 0;
+                this.input = false;
+                this.output = false;
+                this.accumulated = 0;
+                this.done = false;
+                this.triggered = false;
+                this.lastInput = false;
+            }
+
+            update(dt, masterInput) {
+                this.input = masterInput;
+
+                if (this.input) {
+                    this.triggered = false;
+                    this.elapsed = 0;
+                    this.output = true;
+                    this.done = true;
+                } else {
+                    if (this.lastInput) {
+                        this.triggered = true;
+                        this.elapsed = 0;
+                    }
+                    if (this.triggered && !this.input) {
+                        this.elapsed += dt;
+                        if (this.elapsed >= this.preset) {
+                            this.output = false;
+                            this.done = false;
+                        } else {
+                            this.output = true;
+                            this.done = true;
+                        }
+                    }
+                }
+
+                this.lastInput = this.input;
+            }
+
+            get elapsedValue() { return this.elapsed.toFixed(2); }
+            get remainingValue() {
+                if (this.input) return '0.00';
+                if (!this.triggered) return '0.00';
+                const rem = Math.max(0, this.preset - this.elapsed);
+                return rem.toFixed(2);
+            }
+            get progressPct() {
+                if (this.preset === 0) return 100;
+                return Math.min(100, (this.elapsed / this.preset) * 100);
+            }
+        }
+
+        class RTOTimer {
+            constructor(id, preset) {
+                this.id = id;
+                this.preset = preset;
+                this.elapsed = 0;
+                this.input = false;
+                this.output = false;
+                this.accumulated = 0;
+                this.done = false;
+                this.triggered = false;
+                this.lastInput = false;
+                this.history = [];
+            }
+
+            get type() { return 'RTO'; }
+            get label() { return 'RTO - Retentive Timer'; }
+            get badgeClass() { return 'badge-rto'; }
+            get descClass() { return 'rto'; }
+
+            reset() {
+                this.elapsed = 0;
+                this.input = false;
+                this.output = false;
+                this.accumulated = 0;
+                this.done = false;
+                this.triggered = false;
+                this.lastInput = false;
+            }
+
+            update(dt, masterInput) {
+                this.input = masterInput;
+
+                if (this.input && !this.lastInput) {
+                    this.triggered = true;
+                    this.done = false;
+                }
+
+                if (this.input && this.triggered) {
+                    this.elapsed += dt;
+                    if (this.elapsed >= this.preset) {
+                        this.output = true;
+                        this.done = true;
+                    }
+                }
+
+                if (!this.input) {
+                    this.triggered = false;
+                }
+
+                this.lastInput = this.input;
+            }
+
+            get elapsedValue() { return this.elapsed.toFixed(2); }
+            get remainingValue() {
+                if (this.done) return '0.00';
+                if (!this.input) return this.remainingFromAccumulated;
+                const rem = Math.max(0, this.preset - this.elapsed);
+                return rem.toFixed(2);
+            }
+            get remainingFromAccumulated() {
+                const rem = Math.max(0, this.preset - this.elapsed);
+                return rem.toFixed(2);
+            }
+            get progressPct() {
+                if (this.preset === 0) return 100;
+                return Math.min(100, (this.elapsed / this.preset) * 100);
+            }
+        }
+
+        class TPTimer {
+            constructor(id, preset) {
+                this.id = id;
+                this.preset = preset;
+                this.elapsed = 0;
+                this.input = false;
+                this.output = false;
+                this.accumulated = 0;
+                this.done = false;
+                this.triggered = false;
+                this.lastInput = false;
+                this.pulseActive = false;
+                this.history = [];
+            }
+
+            get type() { return 'TP'; }
+            get label() { return 'TP - Pulse Timer'; }
+            get badgeClass() { return 'badge-tp'; }
+            get descClass() { return 'tp'; }
+
+            reset() {
+                this.elapsed = 0;
+                this.input = false;
+                this.output = false;
+                this.accumulated = 0;
+                this.done = false;
+                this.triggered = false;
+                this.lastInput = false;
+                this.pulseActive = false;
+            }
+
+            update(dt, masterInput) {
+                this.input = masterInput;
+
+                if (this.input && !this.lastInput) {
+                    this.pulseActive = true;
+                    this.elapsed = 0;
+                    this.output = true;
+                    this.done = false;
+                }
+
+                if (this.pulseActive) {
+                    this.elapsed += dt;
+                    if (this.elapsed >= this.preset) {
+                        this.output = false;
+                        this.done = false;
+                        this.pulseActive = false;
+                    } else {
+                        this.output = true;
+                        this.done = true;
+                    }
+                }
+
+                this.lastInput = this.input;
+            }
+
+            get elapsedValue() { return this.elapsed.toFixed(2); }
+            get remainingValue() {
+                if (!this.pulseActive) return '0.00';
+                const rem = Math.max(0, this.preset - this.elapsed);
+                return rem.toFixed(2);
+            }
+            get progressPct() {
+                if (this.preset === 0) return 100;
+                return Math.min(100, (this.elapsed / this.preset) * 100);
+            }
+        }
+
+        // ===== Simulator Engine =====
+        class PLCTimerSimulator {
+            constructor() {
+                this.timers = [];
+                this.masterInput = false;
+                this.timeScale = 10;
+                this.lastTimestamp = null;
+                this.running = true;
+                this.simTime = 0;
+
+                // Global trend history for 5-minute chart
+                this.trendHistory = [];
+
+                this.initTimers();
+                this.initEventListeners();
+                this.buildTimerCards();
+                this.refreshCards();
+                requestAnimationFrame(this.gameLoop);
+            }
+
+            initTimers() {
+                const preset = parseFloat(document.getElementById('preset-input').value);
+                this.timers = [
+                    new TOTimer('TON-01', preset),
+                    new TOFTimer('TOF-01', preset),
+                    new RTOTimer('RTO-01', preset),
+                    new TPTimer('TP-01', preset)
+                ];
+            }
+
+            initEventListeners() {
+                document.getElementById('preset-input').addEventListener('change', () => {
+                    this.updatePresets();
+                    this.buildTimerCards();
+                });
+
+                document.getElementById('timer-select').addEventListener('change', () => {
+                    this.buildTimerCards();
+                });
+
+                document.getElementById('time-scale').addEventListener('change', (e) => {
+                    this.timeScale = parseFloat(e.target.value);
+                    document.getElementById('current-scale').textContent = `${this.timeScale}x`;
+                });
+
+                document.getElementById('master-input').addEventListener('change', (e) => {
+                    this.masterInput = e.target.checked;
+                    this.refreshCards();
+                });
+            }
+
+            updatePresets() {
+                const preset = parseFloat(document.getElementById('preset-input').value);
+                this.timers.forEach(t => {
+                    if (!t.input || t.constructor.name === 'TOTimer') {
+                        t.preset = preset;
+                    }
+                });
+            }
+
+            gameLoop = (timestamp) => {
+                if (!this.lastTimestamp) this.lastTimestamp = timestamp;
+                const realDeltaTime = (timestamp - this.lastTimestamp) / 1000;
+                this.lastTimestamp = timestamp;
+
+                if (this.running) {
+                    const simulatedDt = realDeltaTime * this.timeScale;
+                    this.updateTimers(simulatedDt);
+                }
+
+                this.refreshCards();
+                requestAnimationFrame(this.gameLoop);
+            };
+
+            updateTimers(dt) {
+                this.timers.forEach(timer => {
+                    timer.update(dt, this.masterInput);
+                    if (!timer._lastRecordedTime || this.simTime - timer._lastRecordedTime >= 1) {
+                        timer._lastRecordedTime = this.simTime;
+                        timer.history.push({
+                            simTime: this.simTime,
+                            input: timer.input,
+                            output: timer.output,
+                            done: timer.done
+                        });
+                    }
+                    if (timer.history.length > 300) {
+                        timer.history.shift();
+                    }
+                });
+
+                // Record global trend point every simulation second
+                if (!this._lastTrendSimTime || this.simTime - this._lastTrendSimTime >= 1) {
+                    this._lastTrendSimTime = this.simTime;
+                    const entry = {
+                        simTime: this.simTime,
+                        masterInput: this.masterInput,
+                        states: this.timers.map(t => ({
+                            id: t.id,
+                            type: t.type,
+                            input: t.input ? 1 : 0,
+                            output: t.output ? 1 : 0,
+                            done: t.done ? 1 : 0,
+                            elapsed: t.elapsed,
+                            progress: t.progressPct
+                        }))
+                    };
+                    this.trendHistory.push(entry);
+                    if (this.trendHistory.length > 300) {
+                        this.trendHistory.shift();
+                    }
+                }
+
+                this.simTime += dt;
+            }
+
+            shouldShowTimer(timerType, selectVal) {
+                if (selectVal === 'all') return true;
+                if (selectVal === 'ton-tof') {
+                    return timerType === 'TON' || timerType === 'TOF';
+                }
+                return timerType.toLowerCase() === selectVal;
+            }
+
+            renderTimer(timer) {
+                const selectVal = document.getElementById('timer-select').value;
+                if (selectVal !== 'all' && !this.shouldShowTimer(timer.type, selectVal)) {
+                    return null;
+                }
+
+                let cardClass = '';
+                if (timer.output) cardClass = timer.done ? 'timer-finished' : 'active';
+
+                let statusLightInput = timer.input ? 'light-on' : 'light-off';
+                let statusLightOutput = timer.output ? (timer.done ? 'light-done' : 'light-on') : 'light-off';
+                let progressBarClass = timer.done ? 'done' : '';
+
+                const isRTO = timer.type === 'RTO';
+
+                let resetText = 'RESET';
+                if (isRTO && !timer.input) {
+                    resetText = 'RESET (Clear)';
+                }
+
+                return `
+                    <div class="timer-card ${cardClass}" id="card-${timer.id}">
+                        <div class="timer-header">
+                            <div class="timer-title">${timer.id}</div>
+                            <span class="timer-type-badge ${timer.badgeClass}">${timer.type}</span>
+                        </div>
+
+                        <div class="timer-display">
+                            <div class="display-item">
+                                <div class="label">PRESET</div>
+                                <div class="value preset" id="val-preset-${timer.id}">${timer.preset.toFixed(2)}s</div>
+                            </div>
+                            <div class="display-item">
+                                <div class="label">ELAPSED</div>
+                                <div class="value elapsed" id="val-elapsed-${timer.id}">${timer.elapsedValue}s</div>
+                            </div>
+                            <div class="display-item">
+                                <div class="label">REMAINING</div>
+                                <div class="value remaining" id="val-remaining-${timer.id}">${timer.remainingValue}s</div>
+                            </div>
+                            <div class="display-item">
+                                <div class="label">PROGRESS</div>
+                                <div class="value done" id="val-progress-${timer.id}">${timer.progressPct.toFixed(0)}%</div>
+                            </div>
+                        </div>
+
+                        <div class="progress-container">
+                            <div class="progress-bar ${progressBarClass}" id="bar-${timer.id}" style="width: ${timer.progressPct}%"></div>
+                        </div>
+
+                        <div class="timer-status">
+                            <div class="status-indicator">
+                                <div class="status-label">INPUT</div>
+                                <div class="status-light ${statusLightInput}" id="light-in-${timer.id}"></div>
+                            </div>
+                            <div class="status-indicator">
+                                <div class="status-label">OUTPUT</div>
+                                <div class="status-light ${statusLightOutput}" id="light-out-${timer.id}"></div>
+                            </div>
+                            <div class="status-indicator">
+                                <div class="status-label">DONE</div>
+                                <div class="status-light ${timer.done ? 'light-done' : 'light-off'}" id="light-dn-${timer.id}"></div>
+                            </div>
+                        </div>
+
+                        <div class="trend-wrapper">
+                            <div class="trend-label">TREND</div>
+                            <canvas class="trend-canvas" id="trend-${timer.id}" width="330" height="90"></canvas>
+                        </div>
+
+                        <div class="ladder-container">
+                            <div class="ladder-rung" id="ladder-${timer.id}">${this.renderLadder(timer)}</div>
+                            <canvas id="ladder-canvas-${timer.id}" width="330" height="120" style="margin-top:10px;"></canvas>
+                        </div>
+
+                        <div id="reset-wrap-${timer.id}">
+                            ${isRTO && !timer.input ? `<button class="reset-btn" onclick="simulator.resetTimer('${timer.id}')">${resetText}</button>` : ''}
+                        </div>
+
+                        <div class="timer-description ${timer.descClass}">
+                            ${this.getTimerDescription(timer)}
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderLadder(timer) {
+                const inState = timer.input ? '[--]●' : '[--/ ]';
+                const outState = timer.output ? '( )' : '(/)';
+                const outSymbol = timer.done ? '═══( )═══' : '───(/)───';
+                const timerSymbol = `[ ${timer.type.padEnd(4)} ]`;
+                return `${inState}  ${timerSymbol}  ${outSymbol}`;
+            }
+
+            getTimerDescription(timer) {
+                const desc = {
+                    'TON': 'When Input → ON: Timer starts counting. When elapsed ≥ preset: Output → ON. When Input → OFF: Output → OFF immediately.',
+                    'TOF': 'When Input → ON: Output → ON immediately. When Input → OFF: Timer starts. When elapsed ≥ preset: Output → OFF.',
+                    'RTO': 'When Input → ON: Timer accumulates. When accumulated ≥ preset: Output → ON. When Input → OFF: Time held (retentive). Reset clears accumulated value.',
+                    'TP': 'On rising edge of Input: Output → ON for preset duration. Output stays ON regardless of Input changes during timing. Auto-completes after preset.'
+                };
+                return desc[timer.type] || '';
+            }
+
+            resetTimer(timerId) {
+                const timer = this.timers.find(t => t.id === timerId);
+                if (timer) {
+                    timer.reset();
+                    if (timer.type === 'RTO') {
+                        timer.elapsed = 0;
+                        timer.accumulated = 0;
+                        timer.output = false;
+                        timer.done = false;
+                        timer.triggered = false;
+                    }
+                }
+                this.refreshCards();
+            }
+
+            buildTimerCards() {
+                const selectVal = document.getElementById('timer-select').value;
+                let html = '';
+                for (const timer of this.timers) {
+                    const rendered = this.renderTimer(timer);
+                    if (rendered) html += rendered;
+                }
+                document.getElementById('timers-grid').innerHTML = html;
+            }
+
+            refreshCards() {
+                const selectVal = document.getElementById('timer-select').value;
+                this.timers.forEach(timer => {
+                    if (!this.shouldShowTimer(timer.type, selectVal)) return;
+                    this.refreshCard(timer);
+                });
+
+                const fullCanvas = document.getElementById('full-trend-canvas');
+                if (fullCanvas) this.renderFullTrend(fullCanvas);
+            }
+
+            refreshCard(timer) {
+                const card = document.getElementById(`card-${timer.id}`);
+                if (card) {
+                    let cls = 'timer-card';
+                    if (timer.output) cls += timer.done ? ' timer-finished' : ' active';
+                    card.className = cls;
+                }
+
+                const setVal = (id, text) => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = text;
+                };
+                setVal(`val-preset-${timer.id}`, `${timer.preset.toFixed(2)}s`);
+                setVal(`val-elapsed-${timer.id}`, `${timer.elapsedValue}s`);
+                setVal(`val-remaining-${timer.id}`, `${timer.remainingValue}s`);
+                setVal(`val-progress-${timer.id}`, `${timer.progressPct.toFixed(0)}%`);
+
+                const bar = document.getElementById(`bar-${timer.id}`);
+                if (bar) {
+                    bar.style.width = `${timer.progressPct}%`;
+                    bar.className = 'progress-bar' + (timer.done ? ' done' : '');
+                }
+
+                const inLight = document.getElementById(`light-in-${timer.id}`);
+                if (inLight) inLight.className = 'status-light ' + (timer.input ? 'light-on' : 'light-off');
+
+                const outLight = document.getElementById(`light-out-${timer.id}`);
+                if (outLight) {
+                    let cls = 'status-light ';
+                    if (timer.output) cls += timer.done ? 'light-done' : 'light-on';
+                    else cls += 'light-off';
+                    outLight.className = cls.trim();
+                }
+
+                const dnLight = document.getElementById(`light-dn-${timer.id}`);
+                if (dnLight) dnLight.className = 'status-light ' + (timer.done ? 'light-done' : 'light-off');
+
+                const ladder = document.getElementById(`ladder-${timer.id}`);
+                if (ladder) ladder.textContent = this.renderLadder(timer);
+
+                const resetWrap = document.getElementById(`reset-wrap-${timer.id}`);
+                if (resetWrap && timer.type === 'RTO') {
+                    if (!timer.input) {
+                        resetWrap.innerHTML = `<button class="reset-btn" onclick="simulator.resetTimer('${timer.id}')">RESET (Clear)</button>`;
+                    } else {
+                        resetWrap.innerHTML = '';
+                    }
+                }
+
+                const canvas = document.getElementById(`trend-${timer.id}`);
+                if (canvas) this.renderTrend(canvas, timer);
+            }
+
+            renderTrend(canvas, timer) {
+                const ctx = canvas.getContext('2d');
+                const w = canvas.width;
+                const h = canvas.height;
+                const history = timer.history || [];
+
+                ctx.clearRect(0, 0, w, h);
+                ctx.fillStyle = '#0a0a1b';
+                ctx.fillRect(0, 0, w, h);
+
+                if (history.length < 2) return;
+
+                const maxTime = Math.max(...history.map(p => p.simTime));
+                const timeWindow = 300;
+                const timeStart = Math.max(0, maxTime - timeWindow);
+
+                const bandH = h / 3;
+                const signals = [
+                    { key: 'input', color: '#4fc3f7', label: 'IN' },
+                    { key: 'output', color: '#ffb74d', label: 'OUT' },
+                    { key: 'done', color: '#4ecca3', label: 'DN' }
+                ];
+
+                signals.forEach((sig, i) => {
+                    const topY = i * bandH;
+                    const bottomY = topY + bandH;
+                    const yCenter = topY + bandH / 2;
+
+                    ctx.strokeStyle = 'rgba(15, 52, 96, 0.7)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(0, bottomY);
+                    ctx.lineTo(w, bottomY);
+                    ctx.stroke();
+
+                    ctx.fillStyle = sig.color;
+                    ctx.font = '10px "Courier New", monospace';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(sig.label, 4, yCenter - 4);
+
+                    ctx.strokeStyle = sig.color;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    let started = false;
+
+                    history.forEach(point => {
+                        const t = point.simTime - timeStart;
+                        if (t < 0) return;
+                        const x = (t / timeWindow) * w;
+                        const y = point[sig.key] ? yCenter - 4 : yCenter + 4;
+                        if (!started) {
+                            ctx.moveTo(x, y);
+                            started = true;
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    });
+                    ctx.stroke();
+                });
+
+                ctx.fillStyle = '#606070';
+                ctx.font = '10px "Courier New", monospace';
+                ctx.textAlign = 'right';
+                for (let m = 0; m <= timeWindow; m += 30) {
+                    const t = m;
+                    if (timeStart + t > maxTime) break;
+                    const x = (t / timeWindow) * w;
+                    ctx.fillText(m.toString(), x - 2, h - 2);
+                }
+            }
+
+            renderFullTrend(canvas) {
+                const ctx = canvas.getContext('2d');
+                const w = canvas.width;
+                const h = canvas.height;
+                const history = this.trendHistory;
+
+                ctx.clearRect(0, 0, w, h);
+                ctx.fillStyle = '#0a0a1b';
+                ctx.fillRect(0, 0, w, h);
+
+                if (history.length < 2) return;
+
+                const maxTime = Math.max(...history.map(p => p.simTime));
+                const timeWindow = 300;
+                const timeStart = Math.max(0, maxTime - timeWindow);
+
+                // Draw time axis grid (every minute)
+                ctx.strokeStyle = 'rgba(15, 52, 96, 0.7)';
+                ctx.lineWidth = 1;
+                ctx.font = '10px "Courier New", monospace';
+                ctx.fillStyle = '#606070';
+                ctx.textAlign = 'center';
+                for (let i = 0; i <= timeWindow; i += 60) {
+                    const t = i;
+                    if (timeStart + t > maxTime) break;
+                    const x = (t / timeWindow) * w;
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, h);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#606070';
+                    ctx.font = '10px "Courier New", monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText((t / 60).toFixed(0) + 'm', x, h - 4);
+                }
+
+                // Draw each timer with IN/OUT/DN signals + progress indicator
+                const signalsPerTimer = 4;
+                const totalBands = this.timers.length * signalsPerTimer;
+                const bandH = h / totalBands;
+
+                const colors = {
+                    input: '#4fc3f7',
+                    output: '#ffb74d',
+                    done: '#4ecca3',
+                    progress: '#ff6b6b'
+                };
+
+                this.timers.forEach((timer, tIdx) => {
+                    ['input', 'output', 'done', 'progress'].forEach((sig, sIdx) => {
+                        const bandIdx = tIdx * signalsPerTimer + sIdx;
+                        const bandY = bandIdx * bandH;
+                        const yCenter = bandY + bandH / 2;
+                        const bandLabel = sig === 'progress' ? `${timer.id}-PROG` : `${timer.id}-${sig.substring(0,1).toUpperCase()}`;
+
+                        ctx.strokeStyle = 'rgba(15, 52, 96, 0.7)';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(0, bandY + bandH);
+                        ctx.lineTo(w, bandY + bandH);
+                        ctx.stroke();
+
+                        if (bandH < 10) {
+                            ctx.strokeStyle = sig === 'progress' ? colors.progress : colors[sig];
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            let started = false;
+
+                            history.forEach(point => {
+                                const state = point.states.find(s => s.id === timer.id);
+                                if (!state) return;
+                                const t = point.simTime - timeStart;
+                                if (t < 0) return;
+                                const x = (t / timeWindow) * w;
+
+                                let y;
+                                if (sig === 'progress') {
+                                    const progPct = state.progress || 0;
+                                    y = yCenter - 4 + (1 - progPct / 100) * 8;
+                                } else {
+                                    const offset = Math.min(3, bandH * 0.3);
+                                    y = state[sig] ? yCenter - offset : yCenter + offset;
+                                }
+
+                                if (!started) {
+                                    ctx.moveTo(x, y);
+                                    started = true;
+                                } else {
+                                    ctx.lineTo(x, y);
+                                }
+                            });
+                            ctx.stroke();
+                            return;
+                        }
+
+                        ctx.fillStyle = sig === 'progress' ? colors.progress : colors[sig];
+                        ctx.font = `${Math.max(8, Math.floor(bandH * 0.6))}px "Courier New", monospace`;
+                        ctx.textAlign = 'left';
+                        ctx.fillText(bandLabel, 4, yCenter - 2);
+
+                        ctx.strokeStyle = sig === 'progress' ? colors.progress : colors[sig];
+                        ctx.lineWidth = 2;
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        let started = false;
+
+                        history.forEach(point => {
+                            const state = point.states.find(s => s.id === timer.id);
+                            if (!state) return;
+                            const t = point.simTime - timeStart;
+                            if (t < 0) return;
+                            const x = (t / timeWindow) * w;
+
+                            let y;
+                            if (sig === 'progress') {
+                                const progPct = state.progress || 0;
+                                y = yCenter - 6 + (1 - progPct / 100) * 12;
+                            } else {
+                                const offset = bandH * 0.35;
+                                y = state[sig] ? yCenter - offset : yCenter + offset;
+                            }
+
+                            if (!started) {
+                                ctx.moveTo(x, y);
+                                started = true;
+                            } else {
+                                ctx.lineTo(x, y);
+                            }
+                        });
+                        ctx.stroke();
+                    });
+                });
+            }
+        }
+
+        // Initialize the simulator
+        const simulator = new PLCTimerSimulator();
+    </script>
+    <script type="module">
+        import { PLCTimer } from './js/timer-engine.js';
+        import { LadderVisualizer } from './js/ladder-view.js';
+        import { WaveformVisualizer } from './js/waveform.js';
+
+        /**
+         * Enhanced PLC Timer Sim integration.
+         * Wires the IEC 61131-3 engine (timer-engine.js),
+         * Canvas Ladder Visualizer (ladder-view.js),
+         * and Waveform Oscilloscope (waveform.js) into the
+         * inline PLCTimerSimulator.
+         */
+
+        // Adapter: maps inline timer state to PLCTimer-style object for LadderVisualizer
+        function createPLCAdapter(timer) {
+            return {
+                get type() { return timer.type; },
+                get IN() { return timer.input; },
+                get Q() { return timer.output; },
+                get ET() { return timer.elapsed * 1000; },
+                get PT() { return timer.preset * 1000; },
+                get RESET() { return timer.type === 'RTO' && !timer.input; }
+            };
+        }
+
+        function entry_time_ms() {
+            if (typeof window.simulator !== 'undefined' && window.simulator) {
+                return window.simulator.simTime * 1000;
+            }
+            return Date.now();
+        }
+
+        function initEnhancedViz() {
+            if (typeof window.simulator === 'undefined') {
+                setTimeout(initEnhancedViz, 50);
+                return;
+            }
+
+            const sim = window.simulator;
+            const plcTimers = {};
+            const ladderVizs = {};
+
+            // Create LadderVisualizers and PLCTimer engines
+            sim.timers.forEach(t => {
+                const canvas = document.getElementById('ladder-canvas-' + t.id);
+                if (canvas) ladderVizs[t.id] = new LadderVisualizer(canvas);
+                plcTimers[t.id] = new PLCTimer();
+                plcTimers[t.id].setType(t.type.toLowerCase());
+                plcTimers[t.id].setPT(t.preset * 1000);
+            });
+
+            // Create WaveformVisualizer for full trend canvas
+            const fullCanvas = document.getElementById('full-trend-canvas');
+            let waveformViz = null;
+            if (fullCanvas) waveformViz = new WaveformVisualizer(fullCanvas);
+
+            // Replace renderFullTrend with WaveformVisualizer
+            const origRenderFullTrend = sim.renderFullTrend;
+            sim.renderFullTrend = function(canvas) {
+                if (waveformViz && this.trendHistory.length > 0) {
+                    waveformViz.clear();
+                    this.trendHistory.forEach(entry => {
+                        const firstState = entry.states[0];
+                        waveformViz.addSample({
+                            time: entry.simTime * 1000,
+                            IN: firstState.input,
+                            Q: firstState.output,
+                            ET: firstState.elapsed * 1000,
+                            PT: firstState.elapsed * 1000 + 1,
+                            RESET: 0
+                        });
+                    });
+                    waveformViz.draw(entry_time_ms());
+                } else {
+                    origRenderFullTrend.call(this, canvas);
+                }
+            };
+
+            // Hook into refreshCard for LadderVisualizer updates
+            const origRefreshCard = sim.refreshCard;
+            sim.refreshCard = function(timer) {
+                origRefreshCard.call(this, timer);
+                const ladderViz = ladderVizs[timer.id];
+                if (ladderViz) {
+                    const adapter = createPLCAdapter(timer);
+                    ladderViz.draw(adapter);
+                }
+            };
+
+            sim.buildTimerCards();
+            console.log('[PLC Timer Sim] Enhanced viz modules loaded:',
+                'PLCTimer engines:', Object.keys(plcTimers).length,
+                'LadderVisualizers:', Object.keys(ladderVizs).length,
+                'WaveformVisualizer:', !!waveformViz);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initEnhancedViz);
+        } else {
+            initEnhancedViz();
+        }
+    </script>
+</body>
+
+</html>

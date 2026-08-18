@@ -8,7 +8,7 @@ let isProjectMode = false;
 // Global settings controllable via HUD
 let particleSettings = {
     theme: 'neon',
-    speedMultiplier: 1.0,
+    speedMultiplier: 1.7,
     connectionDistance: 140,
     targetCount: 180,
     interactionMode: 'repel' // 'repel' | 'attract'
